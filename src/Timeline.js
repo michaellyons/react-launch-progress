@@ -1,26 +1,32 @@
 import React from 'react';
 import Chart from './Chart';
 import * as d3 from 'd3';
-import moment from 'moment';
 
 export default class Timeline extends React.Component {
   static defaultProps = {
+    title: 'Timeline',
+    xData: 'date',
     timed: false,
-    height: 100
+    height: 100,
+    showDots: true,
+    showGoal: true
   };
   constructor(props) {
     super(props);
     this.state = {
       updateTime: 0,
+      complete: false,
       width: props.width || 1000
     };
     this.tick = this.tick.bind(this);
     this.getWidth = this.getWidth.bind(this);
     this.handleResize = this.handleResize.bind(this);
+    this.complete = this.complete.bind(this);
     this.clear = this.clear.bind(this);
   }
   componentDidMount() {
     let _self = this;
+    this.handleResize();
     window.addEventListener('resize', this.handleResize);
     if (this.props.timed) {
       this.interval = setInterval(() => {
@@ -45,6 +51,10 @@ export default class Timeline extends React.Component {
   clear() {
     clearInterval(this.interval);
   }
+  complete() {
+    clear();
+    this.setState({complete: true});
+  }
   render() {
     let { updateTime, width } = this.state;
     let {
@@ -57,22 +67,39 @@ export default class Timeline extends React.Component {
         titleBkg,
         data,
         xData,
+        dotColor,
+        dotCompleteColor,
+        showDots,
+        showGoal,
+        goalColor,
+        dotStyle,
+        dotCompleteStyle,
+        goalDotStyle,
         utc,
+        wrapStyle,
         style
     } = this.props;
     let parseDate = utc ?
                   d3.timeParse("%Y-%m-%dT%H:%M:%S%Z") :
                   d3.timeParse("%m-%d-%Y");
 
-    let parsedData = data ? data.map((d, i) => {
-      return {
-        ...d,
-        date: parseDate(d.date)
-      };
-    }) : [];
-    return (<div ref={'container'}>
+    let extent;
+    let parsedData = [];
+    if (data) {
+
+      parsedData = data.map((d, i) => {
+        return {
+          ...d,
+          date: parseDate(d.date)
+        };
+      });
+      extent = d3.extent(parsedData, function (d) {
+          return d[xData];
+      });
+    }
+    return (<div ref={'container'} style={{position: 'relative', ...wrapStyle}}>
               <Chart
-                key={ timed ? updateTime : width}
+                key={ timed ? updateTime : width }
                 title={ title }
                 xData={xData || "date"}
                 timed={timed}
@@ -82,6 +109,11 @@ export default class Timeline extends React.Component {
                 labelPos={labelPos}
                 clearInterval={this.clear}
                 data={ parsedData }
+                dotStyle={dotStyle}
+                dotCompleteStyle={dotCompleteStyle}
+                goalDotStyle={goalDotStyle}
+                showGoal={showGoal}
+                showDots={showDots}
                 style={{position: 'relative', ...style}}
                 height={height || 100}
                 width={width}/>
