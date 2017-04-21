@@ -23,6 +23,8 @@ class Chart extends React.Component {
         id: 'event-timeline',
         showGoal: true,
         showDots: true,
+        showLabels: true,
+        showTicks: true,
         margin:{
             top: 40, right: 40, bottom: 10, left: 50
         },
@@ -102,11 +104,14 @@ class Chart extends React.Component {
 
         let { title,
               progressStyle,
-              showGoal,
               goalDotStyle,
+              goalCompleteDotStyle,
               dotStyle,
               dotCompleteStyle,
               showDots,
+              showGoal,
+              showLabels,
+              showTicks,
               labelPos,
               mainBkg,
               margin,
@@ -123,7 +128,7 @@ class Chart extends React.Component {
         let ticks = [];
         let goal;
         let progress;
-
+        let goalScale;
         if (!this.props.data || !this.props.data.length) {
           return null;
         }
@@ -138,7 +143,7 @@ class Chart extends React.Component {
           })
           goal = this.props.data.pop();
 
-          let goalScale = goal ? this.xScale(goal[this.props.xData]) : 0;
+          goalScale = goal ? this.xScale(goal[this.props.xData]) : 0;
 
           // Create Obj representing Now
           let nowObj = {
@@ -167,7 +172,7 @@ class Chart extends React.Component {
           let scaleHalf = this.yScale(heightMargind/2);
 
           // Add the Goal Dot
-          if (goal && showGoal) dots.push(<Dot id={'goal_dot'} x={this.xScale(goal[this.props.xData])} r={'6'} style={{fill: '#ddd', stroke: '#00fefe', strokeWidth: 2, ...goalDotStyle}} key='b' y={scaleHalf} /> )
+          if (goal && showGoal) dots.push(<Dot id={'goal_dot'} x={this.xScale(goal[this.props.xData])} r={'6'} style={{fill: '#ddd', stroke: '#00fefe', strokeWidth: 2, ...(done ? goalCompleteDotStyle : goalDotStyle)}} key='b' y={scaleHalf} /> )
 
           elems = this.props.data.map((d, i) => {
             // Scale for X location of datum
@@ -190,7 +195,7 @@ class Chart extends React.Component {
             // Push onto Dots array for Item
             dots.push(<Dot key={'dot'+i} x={dX} y={scaleHalf} r={'6'} style={{fill: '#ddd', stroke: '#000', strokeWidth: 1, ...(dX < nowScaleVal ? dotCompleteStyle : dotStyle)}} /> )
             // If it's the last item, draw line to goal (which was removed)
-            if (i == this.props.data.length - 1) return <Line path={this.line([d, goal])} style={{stroke: '#666', strokeLinecap: i == 0 ? 'round' : ''}} key={i} strokeWidth={14} />;
+            if (i == this.props.data.length - 1) return <Line path={this.line([d, goal])} style={{stroke: '#666', strokeLinecap: i == 0 || i == this.props.data.length -1 ? 'round' : ''}} key={i} strokeWidth={14} />;
             // Return line from point to next point in data
             return <Line path={this.line([d, this.props.data[i+1]])} key={i} style={{stroke: '#666', strokeLinecap: i == 0 ? 'round' : ''}} strokeWidth={14} />;
           })
@@ -199,19 +204,20 @@ class Chart extends React.Component {
             <div style={this.props.style} key={width} ref={'container'}>
                 <svg id={this.props.id} ref='svg' width={width} height={height}>
                     <polygon points={`0,0 300,0 345,24 ${width - 40},24 ${width - 40}, 250 0,250`} style={{fill: (titleBkg || 'navy'),stroke:'',strokeWidth:1}} />
-                    <rect fill={mainBkg || 'grey'} y={32} width={width} height={height - 31} />
+                    <rect fill={mainBkg || 'grey'} y={32} width={width} height={height - 24} />
                     <text id={'chart_title'} y="22" x={this.props.margin.left - 4 || "20"} fill={textColor || '#000'} fontFamily="Verdana" fontSize="16">
                       {title}
                     </text>
-                    <text id={'goal_label'} x={this.state.width - 6} y="50" fill={textColor || '#000'} textAnchor="end" fontFamily="Verdana" fontSize="16">
-                      {goal && goal.name}
-                    </text>
+
                     <g transform={this.transform} fill='#333'>
-                      { labels }
+                      { showLabels && labels }
+                      <text id={'goal_label'} x={goalScale} y="50" fill={textColor || '#000'} textAnchor="end" fontFamily="Verdana" fontSize="16">
+                        { showGoal && goal && goal.name}
+                      </text>
                       { elems }
                       <Line path={this.line([this.props.data[0], goal])} key={'abc'} stroke={'#aaa'} strokeWidth={8} strokeLinecap={'round'} />
                       { progress }
-                      { ticks }
+                      { showTicks && ticks }
                       <g id="dots">
                       { showDots && dots }
                       </g>

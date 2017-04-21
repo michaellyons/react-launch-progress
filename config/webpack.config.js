@@ -127,8 +127,7 @@ webpackConfig.module.loaders = [{
   loader  : 'babel-loader',
   include: [
       project.paths.demo(),
-      project.paths.client(),
-      project.paths.test()
+      project.paths.client()
   ],
   query   : project.compiler_babel
 }, {

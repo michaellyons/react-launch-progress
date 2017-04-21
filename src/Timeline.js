@@ -13,6 +13,7 @@ export default class Timeline extends React.Component {
   };
   constructor(props) {
     super(props);
+    this.parse = d3.timeParse("%Y-%m-%dT%H:%M:%S%Z");
     this.state = {
       updateTime: 0,
       complete: false,
@@ -26,6 +27,9 @@ export default class Timeline extends React.Component {
   }
   componentDidMount() {
     let _self = this;
+    this.parse = this.props.utc ?
+                  d3.timeParse("%Y-%m-%dT%H:%M:%S%Z") :
+                  d3.timeParse("%m-%d-%Y");
     this.handleResize();
     window.addEventListener('resize', this.handleResize);
     if (this.props.timed) {
@@ -70,6 +74,8 @@ export default class Timeline extends React.Component {
         dotColor,
         dotCompleteColor,
         showDots,
+        showLabels,
+        showTicks,
         showGoal,
         goalColor,
         dotStyle,
@@ -79,6 +85,7 @@ export default class Timeline extends React.Component {
         wrapStyle,
         style
     } = this.props;
+    let _self = this;
     let parseDate = utc ?
                   d3.timeParse("%Y-%m-%dT%H:%M:%S%Z") :
                   d3.timeParse("%m-%d-%Y");
@@ -90,14 +97,14 @@ export default class Timeline extends React.Component {
       parsedData = data.map((d, i) => {
         return {
           ...d,
-          date: parseDate(d.date)
+          date: _self.parse(d.date)
         };
       });
       extent = d3.extent(parsedData, function (d) {
           return d[xData];
       });
     }
-    return (<div ref={'container'} style={{position: 'relative', ...wrapStyle}}>
+    return (<div ref={'container'} style={{position: 'relative', height: height, ...wrapStyle}}>
               <Chart
                 key={ timed ? updateTime : width }
                 title={ title }
@@ -114,6 +121,8 @@ export default class Timeline extends React.Component {
                 goalDotStyle={goalDotStyle}
                 showGoal={showGoal}
                 showDots={showDots}
+                showLabels={showLabels}
+                showTicks={showTicks}
                 style={{position: 'relative', ...style}}
                 height={height || 100}
                 width={width}/>
