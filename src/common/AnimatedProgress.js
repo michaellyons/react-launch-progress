@@ -6,6 +6,7 @@ class AnimatedProgress extends Component {
     onPointComplete: React.PropTypes.func,
     points: React.PropTypes.array,
     step: React.PropTypes.number,
+    play: React.PropTypes.bool,
     timed: React.PropTypes.bool,
     autoStart: React.PropTypes.bool,
     y: React.PropTypes.number,

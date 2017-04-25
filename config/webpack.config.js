@@ -26,9 +26,7 @@ const webpackConfig = {
 // ------------------------------------
 // Entry Points
 // ------------------------------------
-const APP_ENTRY = __PROD__
-                  ? project.paths.client()
-                  : project.paths.demo('main.js')
+const APP_ENTRY = project.paths.demo('main.js')
 
 webpackConfig.entry = function () {
   return {
@@ -99,7 +97,6 @@ if (__DEV__) {
   webpackConfig.devtool = false
   webpackConfig.plugins.push(
     new webpack.optimize.OccurrenceOrderPlugin(),
-    new webpack.optimize.DedupePlugin(),
     new webpack.optimize.UglifyJsPlugin({
       compress : {
         unused    : true,
@@ -149,7 +146,6 @@ webpackConfig.module.loaders.push({
   test    : /\.scss$/,
   loaders : [
     'style-loader',
-
     BASE_CSS_LOADER,
     'postcss-loader',
     'sass?sourceMap'

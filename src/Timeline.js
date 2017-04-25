@@ -157,11 +157,11 @@ export default class Timeline extends React.Component {
   }
   start () {
     this.setState({ play: true, complete: false })
-    let { data } = this.props;
+    let { data } = this.props
     if (data[0].onComplete && typeof data[0].onComplete === 'function') {
-      data[0].onComplete();
+      data[0].onComplete()
     }
-    this.refs.timeline.start();
+    this.refs.timeline.start()
   }
   render () {
     let { play, complete, completed, width } = this.state
