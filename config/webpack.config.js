@@ -23,9 +23,6 @@ const webpackConfig = {
   },
   module : {}
 }
-if (__PROD__) {
-  webpackConfig.resolve.modules = [project.paths.client(), 'node_modules']
-}
 // ------------------------------------
 // Entry Points
 // ------------------------------------
@@ -34,11 +31,7 @@ const APP_ENTRY = __PROD__
                   : project.paths.demo('main.js')
 
 webpackConfig.entry = function () {
-  return __PROD__
-  ? {
-    index: [APP_ENTRY]
-  }
-  : {
+  return {
     app : __DEV__
     ? [APP_ENTRY].concat(`webpack-hot-middleware/client?path=${project.compiler_public_path}__webpack_hmr`)
     : [APP_ENTRY],
@@ -54,10 +47,6 @@ webpackConfig.output = {
   path       : project.paths.dist(),
   publicPath : project.compiler_public_path
 }
-if (__PROD__) {
-  webpackConfig.output.filename = false
-  webpackConfig.output.path = project.paths.lib()
-}
 
 // ------------------------------------
 // Externals
@@ -66,28 +55,22 @@ webpackConfig.externals = {}
 webpackConfig.externals['react/lib/ExecutionEnvironment'] = true
 webpackConfig.externals['react/lib/ReactContext'] = true
 webpackConfig.externals['react/addons'] = true
-if (__PROD__) {
-  webpackConfig.externals['react'] = true
-  webpackConfig.externals['react-dom'] = true
-}
+
 // ------------------------------------
 // Plugins
 // ------------------------------------
 webpackConfig.plugins = [
-  new webpack.DefinePlugin(project.globals)
+  new webpack.DefinePlugin(project.globals),
+  new HtmlWebpackPlugin({
+    template : project.paths.demo('index.html'),
+    hash     : false,
+    favicon  : project.paths.public('favicon.ico'),
+    filename : 'index.html',
+    minify   : {
+      collapseWhitespace : true
+    }
+  })
 ]
-if (!__PROD__) {
-  webpackConfig.plugins.push(
-    new HtmlWebpackPlugin({
-      template : project.paths.demo('index.html'),
-      hash     : false,
-      favicon  : project.paths.public('favicon.ico'),
-      filename : 'index.html',
-      minify   : {
-        collapseWhitespace : true
-      }
-    }))
-}
 
 // Ensure that the compiler exits on errors during testing so that
 // they do not get skipped and misreported.
@@ -128,8 +111,8 @@ if (__DEV__) {
   )
 }
 
-// Don't split bundles during testing or production, since we only want import one bundle
-if (!__TEST__ && !__PROD__) {
+// Don't split bundles during testing, since we only want import one bundle
+if (!__TEST__) {
   webpackConfig.plugins.push(
     new webpack.optimize.CommonsChunkPlugin({
       names : ['vendor']

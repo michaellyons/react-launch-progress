@@ -2,6 +2,11 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Timeline from '../src';
 import moment from 'moment';
+var ReactToastr = require("react-toastr");
+var {ToastContainer} = ReactToastr; // This is a React Element.
+// For Non ES6...
+// var ToastContainer = ReactToastr.ToastContainer;
+var ToastMessageFactory = React.createFactory(ReactToastr.ToastMessage.animation);
 
 const now = moment();
 const first_diff = now.date() - now.day();
@@ -44,7 +49,14 @@ const LAUNCH_TIMELINE = timeLineItems.map((item, i) => {
     onComplete: () => { console.log(item[1] + ' Callback Action');}
   }
 });
-
+const SECTION_TITLE_STYLE = {
+  margin: '0px 0px 20px 0px',
+  padding: 10,
+  borderBottom: '1px solid lightgrey'
+};
+const SECTION_STYLE = {
+  padding: 10
+}
 const COLOR_INPUT_STYLE = {
   background: 'none',
   border: 'none',
@@ -91,6 +103,7 @@ class Demo extends React.Component {
       THIS_HOUR: constructTimeSeries(),
       dotCompleteColor: '#0088d1'
     };
+    this.addAlert = this.addAlert.bind(this)
     this.handleResize = this.handleResize.bind(this)
     this.getSize = this.getSize.bind(this)
     this.doStart = this.doStart.bind(this)
@@ -118,6 +131,15 @@ class Demo extends React.Component {
     launchProgress = val < 0 && launchProgress == 0 ? 0 : launchProgress + val;
     this.setState({launchProgress: launchProgress});
   }
+  addAlert (title = 'Toast!', message = 'This is a toast!') {
+    this.refs.toaster.success(
+    message,
+    title,
+    {
+      timeOut: 3000,
+      extendedTimeOut: 3000
+    });
+  }
   resetLaunch() {
     this.refs.mainChart.reset();
     this.setState({launchProgress: 0, done: false});
@@ -135,10 +157,15 @@ class Demo extends React.Component {
     this.setState(state);
   }
   doStart() {
+    this.setState({launch: true, done: false});
     this.refs.mainChart.start();
   }
   launchComplete() {
-    this.setState({done: true})
+    this.setState({done: true, launch: false});
+    this.addAlert('Launch Completed!', 'Huge work! Such Profit! Wow!');
+  }
+  stepComplete(step) {
+
   }
   render() {
 
@@ -151,6 +178,7 @@ class Demo extends React.Component {
       progressColor,
       textColor,
       done,
+      launch,
       labelPos,
       title,
       mainBkg,
@@ -166,16 +194,18 @@ class Demo extends React.Component {
       dotCompleteColor
     } = this.state;
     let optionLabelStyle = {
-      marginLeft: 10
+      padding: 5
     };
     let optionStyle = {
-      marginBottom: 10
-    }
+      textAlign: 'center'
+    };
+
     let mainTimeline = LAUNCH_TIMELINE ?
     <Timeline
       ref='mainChart'
       title={'Let\'s Launch!'}
-      style={{marginBottom: 20}}
+      style={{display: 'flex'}}
+      wrapStyle={{zIndex: 2, display: 'flex', position: 'fixed', bottom: 0, width: '100%', left: 0}}
       utc={true}
       timed={true}
       titleBkg={titleBkg}
@@ -199,21 +229,27 @@ class Demo extends React.Component {
         fill: goalCompleteColor
       }}
       goalDotStyle={{fill: goalColor, stroke: goalStrokeColor}}
-      data={LAUNCH_TIMELINE} /> :
+      data={LAUNCH_TIMELINE.map((o, i) => {
+        return {...o, onComplete: this.addAlert.bind(null, o.name, 'Step Completed!')}
+      })} /> :
       null;
 
-    return <div>
+    return <div className='container' >
+            <ToastContainer ref="toaster"
+                        toastMessageFactory={ToastMessageFactory}
+                        className="toast-top-left" />
             <canvas
               style={{
-                zIndex: 0,
+                zIndex: -1,
                 position: 'absolute',
                 top: 0,
                 left: 0,
-                width: w,
+                transition: 'all 1s ease-out',
+                width: '100%',
                 height: h,
                 backgroundColor: '#fff'}}>
             </canvas>
-            <div className='container' style={{position: 'relative', color: '#000', zIndex: 1, paddingBottom: 120}}>
+            <div style={{ transition: 'all 0.9s ease-out', position: 'relative', color: '#000', zIndex: 1, paddingBottom: 120}}>
               <div style={{marginBottom: 30, textAlign: 'center'}} >
                 <h1>React Launch Timeline</h1>
                 <h4>{`npm install react-launch-timeline`}</h4>
@@ -231,100 +267,99 @@ class Demo extends React.Component {
               </button>
               </div>
 
-              {mainTimeline}
-              <div style={{boxShadow: '0px 0px 4px 0px grey'}}>
+              <div>
               <div style={{display: 'flex', flexWrap: 'wrap'}}>
-                <div className='col-xs-12 col-sm-3'>
-                  <h4>General</h4>
-                  <div style={optionStyle}>
-                  <input
-                    type='color'
-                    style={COLOR_INPUT_STYLE}
-                    value={titleBkg}
-                    onChange={this.handleDataChange.bind(null, 'titleBkg')} />
-                  <span style={optionLabelStyle}>Title Bkg</span>
+                <div className='col-xs-12' style={SECTION_STYLE}>
+                  <h4 style={SECTION_TITLE_STYLE}>General</h4>
+                  <div style={optionStyle} className='col-xs-2'>
+                    <input
+                      type='color'
+                      style={COLOR_INPUT_STYLE}
+                      value={titleBkg}
+                      onChange={this.handleDataChange.bind(null, 'titleBkg')} />
+                    <div style={optionLabelStyle}>Title Background</div>
                   </div>
-                  <div style={optionStyle}>
+                  <div style={optionStyle} className='col-xs-2'>
                     <input
                       type='color'
                       style={COLOR_INPUT_STYLE}
                       value={mainBkg}
                       onChange={this.handleDataChange.bind(null, 'mainBkg')} />
-                    <span style={optionLabelStyle}>Main Bkg</span>
+                    <div style={optionLabelStyle}>Main Background</div>
                   </div>
-                  <div style={optionStyle}>
+                  <div style={optionStyle} className='col-xs-2'>
                     <input
                       type='color'
                       style={COLOR_INPUT_STYLE}
                       value={textColor}
                       onChange={this.handleDataChange.bind(null, 'textColor')} />
-                    <span style={optionLabelStyle}>Text Color</span>
+                    <div style={optionLabelStyle}>Text Color</div>
                   </div>
-                  <div style={optionStyle}>
+                  <div style={optionStyle} className='col-xs-2'>
                     <input
                       type='color'
                       style={COLOR_INPUT_STYLE}
                       value={progressColor}
                       onChange={this.handleDataChange.bind(null, 'progressColor')} />
-                    <span style={optionLabelStyle}>Progress Color</span>
+                    <div style={optionLabelStyle}>Progress Color</div>
                   </div>
                 </div>
-                <div className='col-xs-12 col-sm-3'>
-                  <h4>Dots</h4>
-                  <div style={optionStyle}>
+                <div className='col-xs-12' style={SECTION_STYLE}>
+                  <h4 style={SECTION_TITLE_STYLE}>Dots</h4>
+                  <div style={optionStyle} className='col-xs-2'>
                     <input
                       type='checkbox'
                       style={CHECKBOX_INPUT_STYLE}
                       checked={showDots}
                       onChange={this.handleCheckboxChange.bind(null, 'showDots')} />
-                    <span style={optionLabelStyle}>Show Dots</span>
+                    <div style={optionLabelStyle}>Show Dots</div>
                   </div>
-                  <div style={optionStyle}>
+                  <div style={optionStyle} className='col-xs-2'>
                     <input
                       type='color'
                       style={COLOR_INPUT_STYLE}
                       value={dotColor}
                       onChange={this.handleDataChange.bind(null, 'dotColor')} />
-                    <span style={optionLabelStyle}>Dot Color</span>
+                    <div style={optionLabelStyle}>Default Color</div>
                   </div>
-                  <div style={optionStyle}>
+                  <div style={optionStyle} className='col-xs-2'>
                     <input
                       type='color'
                       style={COLOR_INPUT_STYLE}
                       value={dotCompleteColor}
                       onChange={this.handleDataChange.bind(null, 'dotCompleteColor')} />
-                    <span style={optionLabelStyle}>Dot Complete Color</span>
+                    <div style={optionLabelStyle}>Complete Color</div>
                   </div>
                 </div>
-                <div className='col-xs-12 col-sm-3'>
-                  <h4>Labels</h4>
-                  <div style={optionStyle}>
+                <div className='col-xs-12' style={SECTION_STYLE}>
+                  <h4 style={SECTION_TITLE_STYLE}>Labels</h4>
+                  <div style={optionStyle} className='col-xs-2'>
                     <input
                       type='checkbox'
                       style={CHECKBOX_INPUT_STYLE}
                       checked={showLabels}
                       onChange={this.handleCheckboxChange.bind(null, 'showLabels')} />
-                    <span style={optionLabelStyle}>Show Labels</span>
+                    <div style={optionLabelStyle}>Show Labels</div>
                   </div>
-                  <div style={optionStyle}>
+                  <div style={optionStyle} className='col-xs-2'>
                     <input
                       type='checkbox'
                       style={CHECKBOX_INPUT_STYLE}
                       checked={showTicks}
                       onChange={this.handleCheckboxChange.bind(null, 'showTicks')} />
-                    <span style={optionLabelStyle}>Show Ticks</span>
+                    <div style={optionLabelStyle}>Show Ticks</div>
                   </div>
-                  <div style={optionStyle}>
+                  <div style={optionStyle} className='col-xs-2'>
                     <input
                       type='color'
                       style={COLOR_INPUT_STYLE}
                       value={labelColor}
                       onChange={this.handleDataChange.bind(null, 'labelColor')} />
-                    <span style={optionLabelStyle}>Label Color</span>
+                    <div style={optionLabelStyle}>Label Color</div>
                   </div>
-                  <div style={optionStyle}>
+                  <div style={optionStyle} className='col-xs-2'>
                     <select
-                      style={{width: 90}}
+                      style={{width: 110}}
                       onChange={this.handleDataChange.bind(null, 'labelPos')}
                       value={labelPos}>
                       <option value={'bottom'}>Bottom</option>
@@ -332,58 +367,32 @@ class Demo extends React.Component {
                       <option value={'alternate-top'}>Alternate Top</option>
                       <option value={'alternate-bot'}>Alternate Bot</option>
                       </select>
-                    <span style={optionLabelStyle}>Label Positions</span>
+                    <div style={optionLabelStyle}>Label Positions</div>
                   </div>
                 </div>
-                <div className='col-xs-12 col-sm-3'>
-                  <h4>Goal</h4>
-                  <div style={optionStyle}>
+                <div className='col-xs-12' style={SECTION_STYLE}>
+                  <h4 style={SECTION_TITLE_STYLE}>Goal</h4>
+                  <div style={optionStyle} className='col-xs-2'>
                     <input
                       type='color'
                       style={COLOR_INPUT_STYLE}
                       value={goalColor}
                       onChange={this.handleDataChange.bind(null, 'goalColor')} />
-                    <span style={optionLabelStyle}>Goal Color</span>
+                    <div style={optionLabelStyle}>Default Color</div>
                   </div>
-                  <div style={optionStyle}>
+                  <div style={optionStyle} className='col-xs-2'>
                     <input
                       type='color'
                       style={COLOR_INPUT_STYLE}
                       value={goalCompleteColor}
                       onChange={this.handleDataChange.bind(null, 'goalCompleteColor')} />
-                    <span style={optionLabelStyle}>Goal Complete Color</span>
+                    <div style={optionLabelStyle}>Complete Color</div>
                   </div>
                 </div>
               </div>
             </div>
             </div>
-            <Timeline
-              title='Launch: CRS 420'
-              style={{display: 'flex'}}
-              wrapStyle={{zIndex: 1, display: 'flex', position: 'fixed', bottom: 0, width: '100%', left: 0}}
-              titleBkg={titleBkg}
-              mainBkg={mainBkg}
-              timed={false}
-              step={launchProgress}
-              progress={launchProgress}
-              progressStyle={{
-                fill: progressColor
-              }}
-              dotStyle={{
-                fill: dotColor
-              }}
-              dotCompleteStyle={{
-                fill: dotCompleteColor
-              }}
-              goalCompleteDotStyle={{
-                fill: goalCompleteColor
-              }}
-              utc={true}
-              labelPos={labelPos}
-              textColor={'#fff'}
-              showNow={false}
-              data={LAUNCH_TIMELINE} />
-
+            {mainTimeline}
           </div>
   }
 }

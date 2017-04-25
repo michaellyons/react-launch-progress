@@ -30,28 +30,28 @@ class AnimatedProgress extends Component {
     this._updateStateValue = this._updateStateValue.bind(this)
   }
   componentDidMount () {
-    console.log('Mount Animated Progress!')
+    // console.log('Mount Animated Progress!')
     let { autoStart } = this.props
     if (autoStart) {
       this.start()
     }
   }
   componentWillUnmount () {
-    console.log('Unmount Timer!')
+    // console.log('Unmount Timer!')
     this.timer = null
     this._setStopped = true
   }
   componentDidUpdate (lastProps, lastState) {
-    let { step } = this.props
-    if (lastProps.step !== step) {
-      console.log('Step Change!')
+    let { step, play } = this.props
+    if (lastProps.step !== step && play) {
+      // console.log('Step Change!')
       this.start()
     }
   }
   start () {
     let { timed, step } = this.props
     this._setStopped = false
-    console.log('Start Animation', step)
+    // console.log('Start Animation', step)
     if (timed) {
       this.tweenToNext()
     } else {
@@ -70,11 +70,11 @@ class AnimatedProgress extends Component {
     let currPoint = points[step]
     let nextPoint = points[step + 1]
     if (!nextPoint) {
-      console.log('No Next Point!')
+      // console.log('No Next Point!')
       if (onComplete && typeof onComplete === 'function') { onComplete() }
       return
     }
-    console.log('Will Tween to Next!')
+    // console.log('Will Tween to Next!')
     let dur = nextPoint.date.getTime() - currPoint.date.getTime()
     this.tween('width', currPoint.x, nextPoint.x, dur)
   }

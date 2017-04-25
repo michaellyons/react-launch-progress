@@ -142,22 +142,26 @@ export default class Timeline extends React.Component {
       datum.onComplete()
     }
     if (stepFocus === data.length - 1) {
-      this.onComplete()
+      this.onComplete(step)
     } else {
       this.setState({ completed: step + 1 })
     }
   }
-  onComplete () {
+  onComplete (step) {
     // console.log('Done with Timeline!')
     this.refs.timeline.stop()
-    this.setState({ complete: true })
+    this.setState({ complete: true, play: false, completed: step + 1 })
     if (this.props.onComplete) {
       this.props.onComplete()
     }
   }
   start () {
     this.setState({ play: true, complete: false })
-    this.refs.timeline.start()
+    let { data } = this.props;
+    if (data[0].onComplete && typeof data[0].onComplete === 'function') {
+      data[0].onComplete();
+    }
+    this.refs.timeline.start();
   }
   render () {
     let { play, complete, completed, width } = this.state

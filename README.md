@@ -33,20 +33,20 @@ import React from 'react';
 import Timeline from 'react-launch-timeline';
 
 let dates = [
-	{
+  {
     name: 'Prep',
     date: '2017-04-23',
-		onComplete: () => { console.log("Prep is done!"); }
+    onComplete: () => { console.log("Prep is done!"); }
   },
   {
     name: 'Startup',
     date: '2017-04-24',
-		onComplete: () => { console.log("Startup is done!"); }
+    onComplete: () => { console.log("Startup is done!"); }
   },
   {
     name: 'Launch',
     date: '2017-04-25',
-		onComplete: () => { console.log("Launch is done!"); }
+    onComplete: () => { console.log("Launch is done!"); }
   },
   ...
 ];
