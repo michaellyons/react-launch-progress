@@ -1,4 +1,4 @@
-# react-launch-timeline
+# React Launch Timeline
 
 ### Inspired by SpaceX's clean display for event sequences.
 
@@ -6,7 +6,7 @@
 [![Dependencies](https://img.shields.io/david/michaellyons/react-launch-timeline.svg?style=flat-square)](https://david-dm.org/michaellyons/react-launch-timeline)
 [![DevDependencies](https://img.shields.io/david/dev/michaellyons/react-launch-timeline.svg?style=flat-square)](https://david-dm.org/michaellyons/react-launch-timeline#info=devDependencies&view=list)
 
-
+## [Github Page](https://michaellyons.github.io/react-launch-timeline)
 
 ## Prerequisites
 
