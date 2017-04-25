@@ -10,6 +10,7 @@
   "author": "Michael Lyons <mlyons000@gmail.com> (http://michaellyons.github.io)",
   "scripts": {
     "clean": "rimraf dist",
+    "babel": "babel ./src --out-dir ./lib",
     "compile": "better-npm-run compile",
     "compile:prod": "better-npm-run compile:prod",
     "compile:demo": "better-npm-run compile:demo",

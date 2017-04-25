@@ -55,7 +55,7 @@ webpackConfig.output = {
   publicPath : project.compiler_public_path
 }
 if (__PROD__) {
-  webpackConfig.output.filename = '[name].js';
+  webpackConfig.output.filename = false;
   webpackConfig.output.path = project.paths.lib()
 }
 
