@@ -91,6 +91,8 @@ class Demo extends React.Component {
       THIS_HOUR: constructTimeSeries(),
       dotCompleteColor: '#0088d1'
     };
+    this.handleResize = this.handleResize.bind(this)
+    this.getSize = this.getSize.bind(this)
     this.doStart = this.doStart.bind(this)
     this.launchComplete = this.launchComplete.bind(this)
     this.resetLaunch = this.resetLaunch.bind(this)
@@ -99,7 +101,17 @@ class Demo extends React.Component {
     this.changeLaunchProgress = this.changeLaunchProgress.bind(this)
   }
   componentDidMount() {
-
+    this.handleResize();
+    window.addEventListener('resize', this.handleResize)
+  }
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.handleResize)
+  }
+  handleResize () {
+    this.setState({ ...this.getSize() })
+  }
+  getSize () {
+    return {w: window.innerWidth, h: window.innerHeight}
   }
   changeLaunchProgress(val) {
     let { launchProgress } = this.state;
@@ -132,6 +144,8 @@ class Demo extends React.Component {
 
     let {
       THIS_HOUR,
+      h,
+      w,
       launchProgress,
       titleBkg,
       progressColor,
@@ -189,23 +203,34 @@ class Demo extends React.Component {
       null;
 
     return <div>
-            <div className='container' style={{paddingBottom: 120}}>
-              <div style={{marginBottom: 30}}>
+            <canvas
+              style={{
+                zIndex: 0,
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: w,
+                height: h,
+                backgroundColor: '#fff'}}>
+            </canvas>
+            <div className='container' style={{position: 'relative', color: '#000', zIndex: 1, paddingBottom: 120}}>
+              <div style={{marginBottom: 30, textAlign: 'center'}} >
                 <h1>React Launch Timeline</h1>
                 <h4>{`npm install react-launch-timeline`}</h4>
                 <h4>{`yarn add react-launch-timeline`}</h4>
               </div>
-              <div>
-                <h3>{`Inspired by SpaceX's clean display for their launch event sequence.`}</h3>
+              <div style={{marginBottom: 30, textAlign: 'center'}}>
+                <h3>{`Inspired by SpaceX's clean display for event sequences.`}</h3>
                 <h4>{`Depends on D3.js`}</h4>
               </div>
-              <div style={{marginBottom: 20}}>
+              <div style={{marginBottom: 30, textAlign: 'center'}}>
               <button
-                className='btn btn-primary'
+                className='btn btn-lg btn-primary'
                 onClick={ done ? this.resetLaunch : this.doStart}>
                 { done ? 'Relaunch!' : 'Launch!'}
               </button>
               </div>
+
               {mainTimeline}
               <div style={{boxShadow: '0px 0px 4px 0px grey'}}>
               <div style={{display: 'flex', flexWrap: 'wrap'}}>
@@ -335,12 +360,24 @@ class Demo extends React.Component {
             <Timeline
               title='Launch: CRS 420'
               style={{display: 'flex'}}
-              wrapStyle={{display: 'flex', position: 'fixed', bottom: 0, width: '100%', left: 0}}
-              mainBkg={'#455A64'}
-              titleBkg={'#111'}
+              wrapStyle={{zIndex: 1, display: 'flex', position: 'fixed', bottom: 0, width: '100%', left: 0}}
+              titleBkg={titleBkg}
+              mainBkg={mainBkg}
               timed={false}
               step={launchProgress}
               progress={launchProgress}
+              progressStyle={{
+                fill: progressColor
+              }}
+              dotStyle={{
+                fill: dotColor
+              }}
+              dotCompleteStyle={{
+                fill: dotCompleteColor
+              }}
+              goalCompleteDotStyle={{
+                fill: goalCompleteColor
+              }}
               utc={true}
               labelPos={labelPos}
               textColor={'#fff'}

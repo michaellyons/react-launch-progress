@@ -2,7 +2,7 @@ import React from 'react'
 import Dot from './common/Dot'
 import Line from './common/Line'
 // array of curve functions and tites
-import * as d3 from 'd3'
+import { line, curveCardinal, extent, scaleTime, scaleLinear } from 'd3'
 
 class Chart extends React.Component {
   static propTypes = {
@@ -69,18 +69,18 @@ class Chart extends React.Component {
 
     this.h = height
 
-    this.xScale = d3.scaleTime()
-            .domain(d3.extent(_self.props.data, function (d) {
+    this.xScale = scaleTime()
+            .domain(extent(_self.props.data, function (d) {
               return d[_self.props.xData]
             }))
             .rangeRound([0, this.w])
 
-    this.yScale = d3.scaleLinear()
+    this.yScale = scaleLinear()
             .domain([0, height])
             .range([this.h, 0])
 
-    this.line = d3.line()
-            .curve(d3.curveCardinal)
+    this.line = line()
+            .curve(curveCardinal)
             .x((d) => {
               return d && this.xScale(d[_self.props.xData] || 0)
             })

@@ -1,8 +1,8 @@
 import React from 'react'
 import Chart from './Chart'
-import * as d3 from 'd3'
 import Dot from './common/Dot'
 import AnimatedProgress from './common/AnimatedProgress'
+import { line, curveCardinal, extent, scaleTime, scaleLinear, timeParse } from 'd3'
 
 // let lastBlurTime = 0
 
@@ -60,7 +60,7 @@ export default class Timeline extends React.Component {
   constructor (props) {
     super(props)
     this.data = []
-    this.parse = d3.timeParse('%Y-%m-%dT%H:%M:%S%Z')
+    this.parse = timeParse('%Y-%m-%dT%H:%M:%S%Z')
     this.state = {
       updateTime: 0,
       complete: false,
@@ -115,16 +115,16 @@ export default class Timeline extends React.Component {
 
     this.h = height
 
-    this.xScale = d3.scaleTime()
+    this.xScale = scaleTime()
           .domain(this.extent)
           .rangeRound([0, this.w])
 
-    this.yScale = d3.scaleLinear()
+    this.yScale = scaleLinear()
           .domain([0, height])
           .range([this.h, 0])
 
-    this.line = d3.line()
-          .curve(d3.curveCardinal)
+    this.line = line()
+          .curve(curveCardinal)
           .x((d) => {
             return d && this.xScale(d[_self.props.xData] || 0)
           })
@@ -191,8 +191,8 @@ export default class Timeline extends React.Component {
     let _self = this
     if (!data) return null
     let parseDate = utc
-                  ? d3.timeParse('%Y-%m-%dT%H:%M:%S%Z')
-                  : d3.timeParse('%m-%d-%Y')
+                  ? timeParse('%Y-%m-%dT%H:%M:%S%Z')
+                  : timeParse('%m-%d-%Y')
     let parsedData
     let eventPoints
     let scaleHalf
@@ -209,7 +209,7 @@ export default class Timeline extends React.Component {
         return a[xData].getTime() - b[xData].getTime()
       })
       this.data = parsedData
-      this.extent = d3.extent(parsedData, function (d) {
+      this.extent = extent(parsedData, function (d) {
         return d[xData]
       })
       this.createChart(_self)
