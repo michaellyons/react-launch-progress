@@ -1,27 +1,29 @@
 import React from 'react';
 import Timeline from '../src/Timeline';
 import Chart from '../src/Chart';
-import { shallow, render } from 'enzyme';
+import { mount, shallow, render } from 'enzyme';
 import PropTypes from 'prop-types';
 import test_dates from './test_dates';
+let dates = test_dates();
 
 describe('(Component) Timeline', () => {
   let _component;
 
   beforeEach(() => {
-    _component = shallow(<Timeline height={100} xData='date' data={test_dates} />);
+    _component = shallow(<Timeline height={100} utc={true} xData='date' data={dates} />);
   })
 
   it('Should exist.', () => {
     expect(_component).to.exist
   })
-  it('Should render as a <div>.', () => {
-    expect( _component.is('div') ).to.equal(true)
-  })
   it('Should find a <Chart />', () => {
     expect( _component.find(Chart) ).to.have.length(1)
   })
-
+  describe('(Progress)', () => {
+    it('Has a Progress Child', () => {
+      expect( _component.find('#chart_progress') ).to.have.length(1);
+    });
+  });
   describe('(Props)', () => {
     it('Should have a height property.', () => {
       expect( _component.props().height ).to.be.defined;

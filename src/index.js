@@ -1,3 +1,3 @@
-import Timeline from './Timeline';
+import Timeline from './Timeline'
 
-module.exports = Timeline;
+module.exports = Timeline

@@ -8,9 +8,11 @@ const debug = require('debug')('app:config:webpack')
 
 const __DEV__ = project.globals.__DEV__
 const __PROD__ = project.globals.__PROD__
+const __DEMO__ = project.globals.__DEMO__
 const __TEST__ = project.globals.__TEST__
 
 debug('Creating configuration.')
+
 const webpackConfig = {
   name    : 'client',
   target  : 'web',
@@ -26,12 +28,12 @@ const webpackConfig = {
 // ------------------------------------
 const APP_ENTRY = project.paths.demo('main.js')
 
-webpackConfig.entry = function() {
+webpackConfig.entry = function () {
   return {
-  app : __DEV__
+    app : __DEV__
     ? [APP_ENTRY].concat(`webpack-hot-middleware/client?path=${project.compiler_public_path}__webpack_hmr`)
     : [APP_ENTRY],
-  vendor : project.compiler_vendors
+    vendor : project.compiler_vendors
   }
 }
 
@@ -40,7 +42,7 @@ webpackConfig.entry = function() {
 // ------------------------------------
 webpackConfig.output = {
   filename   : `[name].[${project.compiler_hash_type}].js`,
-  path       : project.paths.demodist(),
+  path       : project.paths.dist(),
   publicPath : project.compiler_public_path
 }
 
@@ -62,7 +64,6 @@ webpackConfig.plugins = [
     hash     : false,
     favicon  : project.paths.public('favicon.ico'),
     filename : 'index.html',
-    inject   : 'body',
     minify   : {
       collapseWhitespace : true
     }
@@ -93,6 +94,7 @@ if (__DEV__) {
   )
 } else if (__PROD__) {
   debug('Enabling plugins for production (OccurrenceOrder, Dedupe & UglifyJS).')
+  webpackConfig.devtool = false
   webpackConfig.plugins.push(
     new webpack.optimize.OccurrenceOrderPlugin(),
     new webpack.optimize.DedupePlugin(),
@@ -116,7 +118,6 @@ if (!__TEST__) {
   )
 }
 
-
 // ------------------------------------
 // Loaders
 // ------------------------------------
@@ -126,8 +127,8 @@ webpackConfig.module.loaders = [{
   exclude : /node_modules/,
   loader  : 'babel-loader',
   include: [
-      project.paths.demo(),
-      project.paths.client()
+    project.paths.demo(),
+    project.paths.client()
   ],
   query   : project.compiler_babel
 }, {
@@ -232,7 +233,7 @@ if (!__DEV__) {
   ).forEach((loader) => {
     const first = loader.loaders[0]
     const rest = loader.loaders.slice(1)
-    loader.loader = ExtractTextPlugin.extract({fallback: first, use: rest.join('!')})
+    loader.loader = ExtractTextPlugin.extract({ fallback: first, use: rest.join('!') })
     delete loader.loaders
   })
 

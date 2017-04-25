@@ -28,7 +28,7 @@ const karmaConfig = {
         sinon : 'sinon/pkg/sinon.js'
       })
     }),
-    entry   : function() {return {}},
+    entry   : function () { return {} },
     plugins : webpackConfig.plugins.concat([
 
     ]),

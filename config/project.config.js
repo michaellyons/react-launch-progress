@@ -18,6 +18,7 @@ const config = {
   dir_client : 'src',
   dir_demo   : 'demo',
   dir_dist   : 'dist',
+  dir_lib   : 'lib',
   dir_public : 'public',
   dir_server : 'server',
   dir_test   : 'test',
@@ -47,10 +48,7 @@ const config = {
     colors : true
   },
   compiler_vendors : [
-    'react',
-    'react-redux',
-    'react-router',
-    'redux'
+    'react'
   ],
 
   // ----------------------------------
@@ -82,6 +80,7 @@ config.globals = {
   'NODE_ENV'     : config.env,
   '__DEV__'      : config.env === 'development',
   '__PROD__'     : config.env === 'production',
+  '__DEMO__'     : config.env === 'demo',
   '__TEST__'     : config.env === 'test',
   '__COVERAGE__' : !argv.watch && config.env === 'test',
   '__BASENAME__' : JSON.stringify(process.env.BASENAME || '')
@@ -117,6 +116,7 @@ config.paths = {
   demo : base.bind(null, config.dir_demo),
   demodist : base.bind(null, config.dir_demo, config.dir_dist),
   public : base.bind(null, config.dir_public),
+  lib : base.bind(null, config.dir_lib),
   test   : base.bind(null, config.dir_test),
   dist   : base.bind(null, config.dir_dist)
 }
