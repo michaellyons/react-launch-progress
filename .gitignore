@@ -3,6 +3,5 @@ node_modules
 *.log
 .DS_STORE
 
-dist
 coverage
 .idea/

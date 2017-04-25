@@ -55,7 +55,7 @@ webpackConfig.output = {
   publicPath : project.compiler_public_path
 }
 if (__PROD__) {
-  webpackConfig.output.filename = false;
+  webpackConfig.output.filename = false
   webpackConfig.output.path = project.paths.lib()
 }
 
@@ -79,14 +79,14 @@ webpackConfig.plugins = [
 if (!__PROD__) {
   webpackConfig.plugins.push(
     new HtmlWebpackPlugin({
-    template : project.paths.demo('index.html'),
-    hash     : false,
-    favicon  : project.paths.public('favicon.ico'),
-    filename : 'index.html',
-    minify   : {
-      collapseWhitespace : true
-    }
-  }))
+      template : project.paths.demo('index.html'),
+      hash     : false,
+      favicon  : project.paths.public('favicon.ico'),
+      filename : 'index.html',
+      minify   : {
+        collapseWhitespace : true
+      }
+    }))
 }
 
 // Ensure that the compiler exits on errors during testing so that

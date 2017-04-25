@@ -4,8 +4,6 @@ const debug = require('debug')('app:bin:compile')
 const webpackConfig = require('../config/webpack.config')
 const project = require('../config/project.config')
 
-const __DEV__ = project.globals.__DEV__
-const __PROD__ = project.globals.__PROD__
 const __DEMO__ = project.globals.__DEMO__
 // Wrapper around webpack to promisify its compiler and supply friendly logging
 const webpackCompiler = (webpackConfig) =>

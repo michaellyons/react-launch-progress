@@ -10,6 +10,7 @@
   "author": "Michael Lyons <mlyons000@gmail.com> (http://michaellyons.github.io)",
   "scripts": {
     "clean": "rimraf dist",
+    "clean:lib": "rimraf lib",
     "babel": "babel ./src --out-dir ./lib",
     "compile": "better-npm-run compile",
     "compile:prod": "better-npm-run compile:prod",
@@ -17,6 +18,7 @@
     "lint": "eslint bin build config server src tests",
     "lint:fix": "npm run lint -- --fix",
     "start": "better-npm-run start",
+    "publish": "better-npm-run publish",
     "dev": "better-npm-run dev",
     "test": "better-npm-run test",
     "test:dev": "npm run test -- --watch",
@@ -25,6 +27,13 @@
     "deploy:prod": "better-npm-run deploy:prod"
   },
   "betterScripts": {
+    "publish": {
+      "command": "npm run clean:lib && npm run babel && npm publish",
+      "env": {
+        "NODE_ENV": "production",
+        "DEBUG": "publish:*"
+      }
+    },
     "compile": {
       "command": "node bin/compile",
       "env": {
@@ -149,7 +158,10 @@
     "path": "^0.12.7",
     "phantomjs": "^2.1.7",
     "postcss-loader": "^1.3.3",
+    "react": "^15.5.4",
     "react-addons-test-utils": "^15.5.1",
+    "react-dom": "^15.5.4",
+    "react-launch-timeline": "^0.1.3",
     "react-test-renderer": "^15.5.4",
     "redbox-react": "^1.3.6",
     "rimraf": "^2.6.1",
