@@ -5,7 +5,9 @@ import AnimatedProgress from './common/AnimatedProgress'
 import { line, curveCardinal, extent, scaleTime, scaleLinear, timeParse } from 'd3'
 
 // let lastBlurTime = 0
-
+const defaultMargin = {
+  top: 40, right: 40, bottom: 10, left: 50
+};
 export default class Timeline extends React.Component {
   static propTypes = {
     progress: React.PropTypes.number,
@@ -78,7 +80,7 @@ export default class Timeline extends React.Component {
     this.doThing = this.doThing.bind(this)
   }
   componentDidMount () {
-    this.handleResize()
+    this.handleResize();
     window.addEventListener('resize', this.handleResize)
   }
   componentDidUpdate (lastProps, lastState) {
@@ -108,7 +110,7 @@ export default class Timeline extends React.Component {
   }
   createChart (_self) {
     let { margin } = _self.props
-
+    margin = Object.assign({},  defaultMargin, margin);
     this.w = this.state.width - (margin.left + margin.right)
 
     let height = this.props.height - (margin.top + margin.bottom)
@@ -173,6 +175,7 @@ export default class Timeline extends React.Component {
         title,
         progress,
         mainBkg,
+        margin,
         titleBkg,
         data,
         xData,
@@ -282,6 +285,7 @@ export default class Timeline extends React.Component {
         progress={completed}
         textStyle={textStyle}
         mainBkg={mainBkg}
+        margin={margin}
         labelPos={labelPos}
         complete={complete}
         data={this.data}

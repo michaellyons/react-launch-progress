@@ -60,15 +60,17 @@ export default MyAwesomeReactComponent;
 
 ## Customization
 
-Key | Required | Type | Description
+Key | Required |  Type | Description
 ----- | ----- |  ----- | -----
 data | Y | Object[] | Objects with date key and name for labels.
-height | | Integer/String | This will set the total height of the chart.
-labelPos | | Enum | This will set the total height of the chart.
+height | Y | Integer/String | This will set the total height of the chart.
+width | | Integer/String | This will set override the width of the chart.
+title |  | String | Title of the chart.
+labelPos | | Enum | ['top', 'bottom', 'alternate-top', 'alternate-bot'] This will set the total height of the chart.
 xData | | String | Optional override date key for data objects.
 onComplete | | Function | Function to call when timeline reaches end.
 utc | | Bool | Sets parse format to UTC
-timed | | Bool | Updates progress based on Time
+timed | | Bool | Sets progress to d3-timer
 mainBkg | | String | Background color for main chart area
 titleBkg | | String | Background color for title
 titleStyle |  | Object | Style for title text (SVG Text).

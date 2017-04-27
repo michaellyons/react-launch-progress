@@ -3,7 +3,9 @@ import Dot from './common/Dot'
 import Line from './common/Line'
 // array of curve functions and tites
 import { line, curveCardinal, extent, scaleTime, scaleLinear } from 'd3'
-
+const defaultMargin = {
+  top: 40, right: 40, bottom: 10, left: 50
+}
 class Chart extends React.Component {
   static propTypes = {
     width:React.PropTypes.number,
@@ -62,7 +64,7 @@ class Chart extends React.Component {
   }
   createChart (_self) {
     let { margin } = _self.props
-
+    margin = Object.assign({}, defaultMargin, margin);
     this.w = this.state.width - (margin.left + margin.right)
 
     let height = this.props.height - (margin.top + margin.bottom)
@@ -88,7 +90,7 @@ class Chart extends React.Component {
               return this.yScale(height / 2)
             })
 
-    this.transform = 'translate(' + this.props.margin.left + ',' + this.props.margin.top + ')'
+    this.transform = 'translate(' + margin.left + ',' + margin.top + ')'
   }
   createLineSegment (datum, i) {
     return <Line path={this.line(datum)} key={i} fill={'#fe001a'} strokeWidth={2} />
@@ -110,22 +112,22 @@ class Chart extends React.Component {
     let { width } = this.state
 
     let { title,
-              data,
-              complete,
-              goalDotStyle,
-              goalCompleteDotStyle,
-              dotStyle,
-              dotCompleteStyle,
-              textStyle,
-              titleStyle,
-              showDots,
-              showLabels,
-              showTicks,
-              progress,
-              labelPos,
-              mainBkg,
-              titleBkg,
-              height } = this.props
+          data,
+          complete,
+          goalDotStyle,
+          goalCompleteDotStyle,
+          dotStyle,
+          dotCompleteStyle,
+          textStyle,
+          titleStyle,
+          showDots,
+          showLabels,
+          showTicks,
+          progress,
+          labelPos,
+          mainBkg,
+          titleBkg,
+          height } = this.props
 
         // Declare Arrays for SVG Elements
     let dots = []
