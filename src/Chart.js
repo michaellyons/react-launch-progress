@@ -64,7 +64,7 @@ class Chart extends React.Component {
   }
   createChart (_self) {
     let { margin } = _self.props
-    margin = Object.assign({}, defaultMargin, margin);
+    margin = Object.assign({}, defaultMargin, margin)
     this.w = this.state.width - (margin.left + margin.right)
 
     let height = this.props.height - (margin.top + margin.bottom)
