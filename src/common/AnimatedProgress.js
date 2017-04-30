@@ -1,5 +1,9 @@
 import React, { Component } from 'react'
-import { interpolate, easeLinear, timer } from 'd3'
+// import { interpolate, easeLinear, timer } from 'd3'
+import { easeLinear } from 'd3-ease'
+import { timer } from 'd3-timer'
+import { interpolate } from 'd3-interpolate'
+
 class AnimatedProgress extends Component {
   static propTypes = {
     onComplete: React.PropTypes.func,

@@ -2,12 +2,18 @@ import React from 'react'
 import Chart from './Chart'
 import Dot from './common/Dot'
 import AnimatedProgress from './common/AnimatedProgress'
-import { line, curveCardinal, extent, scaleTime, scaleLinear, timeParse } from 'd3'
+// import { line, extent, scaleTime, scaleLinear, timeParse } from 'd3'
+
+import { line } from 'd3-shape'
+import { extent } from 'd3-array'
+import { scaleTime, scaleLinear } from 'd3-scale'
+import { timeParse } from 'd3-time-format'
 
 // let lastBlurTime = 0
 const defaultMargin = {
   top: 40, right: 40, bottom: 10, left: 50
 }
+
 export default class Timeline extends React.Component {
   static propTypes = {
     progress: React.PropTypes.number,
@@ -126,7 +132,6 @@ export default class Timeline extends React.Component {
           .range([this.h, 0])
 
     this.line = line()
-          .curve(curveCardinal)
           .x((d) => {
             return d && this.xScale(d[_self.props.xData] || 0)
           })

@@ -2,7 +2,11 @@ import React from 'react'
 import Dot from './common/Dot'
 import Line from './common/Line'
 // array of curve functions and tites
-import { line, curveCardinal, extent, scaleTime, scaleLinear } from 'd3'
+// import { line, extent, scaleTime, scaleLinear } from 'd3';
+import { line } from 'd3-shape'
+import { extent } from 'd3-array'
+import { scaleTime, scaleLinear } from 'd3-scale'
+
 const defaultMargin = {
   top: 40, right: 40, bottom: 10, left: 50
 }
@@ -82,7 +86,6 @@ class Chart extends React.Component {
             .range([this.h, 0])
 
     this.line = line()
-            .curve(curveCardinal)
             .x((d) => {
               return d && this.xScale(d[_self.props.xData] || 0)
             })
