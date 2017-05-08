@@ -1,3 +1,7 @@
 import Timeline from './Timeline'
+import ControlledTimeline from './ControlledTimeline'
 
-module.exports = Timeline
+module.exports = {
+  Timeline,
+  ControlledTimeline
+}

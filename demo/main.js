@@ -1,32 +1,39 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Timeline from '../src';
+import { Timeline, ControlledTimeline } from '../src';
 import moment from 'moment';
 import marked from 'marked';
 import './main.css';
 var ReactToastr = require("react-toastr");
-var {ToastContainer} = ReactToastr; // This is a React Element.
-// For Non ES6...
-// var ToastContainer = ReactToastr.ToastContainer;
+var {ToastContainer} = ReactToastr;
 var ToastMessageFactory = React.createFactory(ReactToastr.ToastMessage.animation);
 
-const stringThing = '```javascript\n\
-                    import Timeline from \'react-launch-timeline\' \
-                    \n\
-                    class AwesomeComponent extends Component {\n\
-                      constructor(props) {\n\
-                        super(props);\n\
-                      }\n\
-                      render() {\n\
-                        let { dates } = this.props;\n\
-                        return <Timeline data={dates} />\n\
-                      }\n\
-                    }\n\
-                    ```'
+const stringThing =
+'```javascript\n\
+import Timeline from \'react-launch-timeline\' \
+\n\
+class AwesomeComponent extends Component {\n\
+  constructor(props) {\n\
+    super(props);\n\
+  }\n\
+  render() {\n\
+    let { dates } = this.props;\n\
+    return <Timeline data={dates} />\n\
+  }\n\
+}\n\
+```'
 
-const now = moment();
-const first_diff = now.date() - now.day();
-const first = first_diff == now.date() ? moment().date(first_diff - 6) : moment().date(first_diff + 1);
+const ControlledDesc =
+`Displays progress controlled by component's ***step*** property which indicates position in an array of event objects with a ***date*** key.
+`
+const TimelineDesc =
+`Displays progress through an array of event objects with a ***date*** key determined by current time.
+`
+const today = moment().startOf('day');
+const first_diff = today.date() - today.day();
+const first = first_diff == today.date()
+              ? moment().date(first_diff - 6).startOf('day')
+              : moment().date(first_diff + 1).startOf('day');
 
 const THIS_WEEK = [];
 
@@ -35,8 +42,8 @@ for (var i = 0; i <= 7; i++) {
   // if (i == 2) continue;
   var date = moment(first).add(i, 'days');
   THIS_WEEK.push({
-    name: date.format('ddd'),
-    date: date.format('MM-DD-YYYY'),
+    name: date.format('ddd DD/MM'),
+    date: date.toISOString(),
     onComplete: () => {console.log("Woah!")}
   })
 }
@@ -61,7 +68,8 @@ const timeLineItems = [
 const LAUNCH_TIMELINE = timeLineItems.map((item, i) => {
   return {
     name: item[1],
-    date: moment(launchTime).add(item[0], 'seconds').format(),
+    date: moment(launchTime).add(item[0], 'seconds').toISOString(),
+    onStart: () => { console.log(item[1] + ' DID START');},
     onComplete: () => { console.log(item[1] + ' Callback Action');}
   }
 });
@@ -98,7 +106,7 @@ function constructTimeSeries() {
     THIS_HOUR.push({
       name: date.format('h:mmA'),
       onComplete: () => {console.log("WOah!", i)},
-      date: date.format()
+      date: date.toISOString()
     })
   }
   return THIS_HOUR;
@@ -160,7 +168,8 @@ class Demo extends React.Component {
     title,
     {
       timeOut: 3000,
-      extendedTimeOut: 3000
+      extendedTimeOut: 3000,
+      preventDuplicates: false
     });
   }
   resetLaunch() {
@@ -187,11 +196,8 @@ class Demo extends React.Component {
     this.setState({done: true, launch: false});
     this.addAlert('Launch Completed!', 'Huge work! Such Profit! Wow!');
   }
-  stepComplete(step) {
-
-  }
   buildOptionRow(row, i) {
-    return <tr key={i} style={OPTION_STYLE}>
+    return <tr key={row.key || i} style={OPTION_STYLE}>
               <td className='col-xs-2'>{row.component}</td>
               <td className='col-xs-2'>{row.key}</td>
               <td style={OPTION_LABEL_STYLE}>{row.name}</td>
@@ -243,13 +249,10 @@ class Demo extends React.Component {
     let mainTimeline = LAUNCH_TIMELINE ?
     <Timeline
       ref='mainChart'
-      title={'Let\'s Launch!'}
+      title={'This Week'}
       style={{display: 'flex'}}
-      wrapStyle={{zIndex: 2, display: 'flex', position: 'fixed', bottom: 0, width: '100%', left: 0}}
-      utc={true}
-      timed={true}
+      wrapStyle={{zIndex: 2, display: 'flex'}}
       titleBkg={titleBkg}
-      margin={{right: 120, left: 20}}
       mainBkg={mainBkg}
       onComplete={this.launchComplete}
       labelPos={labelPos}
@@ -270,10 +273,47 @@ class Demo extends React.Component {
         fill: goalCompleteColor
       }}
       goalDotStyle={{fill: goalColor, stroke: goalStrokeColor}}
-      data={LAUNCH_TIMELINE.map((o, i) => {
-        return {...o, onComplete: this.addAlert.bind(null, o.name, 'Step Completed!')}
+      data={THIS_WEEK.map((o, i) => {
+        return {...o, onComplete: () => this.addAlert('MARS: '+o.name, 'Step '+i+' Completed!')}
       })} /> :
       null;
+
+      let controlTimeline = LAUNCH_TIMELINE ?
+      <ControlledTimeline
+        ref='controlChart'
+        id='controlChart'
+        title={'LAUNCH: RCT 42'}
+        style={{display: 'flex'}}
+        wrapStyle={{zIndex: 2, display: 'flex'}}
+        utc={true}
+        timed={false}
+        titleBkg={titleBkg}
+        margin={{right: 40}}
+        mainBkg={mainBkg}
+        onComplete={this.launchComplete}
+        labelPos={labelPos}
+        showDots={showDots}
+        showGoal={showGoal}
+        showLabels={showLabels}
+        showTicks={showTicks}
+        step={launchProgress}
+        progressStyle={{
+          fill: progressColor
+        }}
+        dotStyle={{
+          fill: dotColor
+        }}
+        dotCompleteStyle={{
+          fill: dotCompleteColor
+        }}
+        goalCompleteDotStyle={{
+          fill: goalCompleteColor
+        }}
+        goalDotStyle={{fill: goalColor, stroke: goalStrokeColor}}
+        data={LAUNCH_TIMELINE.map((o, i) => {
+          return {...o, onComplete: () => this.addAlert('RCT 42: '+o.name, 'Step '+i+' Completed!')}
+        })} /> :
+        null;
 
       let generalOptions = this.buildTable([
         {
@@ -322,7 +362,7 @@ class Demo extends React.Component {
         },
         {
           name: 'Complete Color',
-          key: 'dotStyle.fill',
+          key: 'dotCompleteStyle.fill',
           component: this.buildColorDiv('dotCompleteColor', dotCompleteColor)
         }
       ].map((item, i) => {
@@ -342,7 +382,7 @@ class Demo extends React.Component {
       ].map((item, i) => {
         return this.buildOptionRow(item, i);
       }));
-      let labelOptions = [
+      let labelOptions = this.buildTable([
         {
           name: 'Show Labels',
           key: 'showLabels',
@@ -376,7 +416,7 @@ class Demo extends React.Component {
           name: 'Label Positions',
           key: 'labelPos',
           component: <select
-            style={{width: 110}}
+            style={{width: 110, color: '#333'}}
             onChange={this.handleDataChange.bind(null, 'labelPos')}
             value={labelPos}>
             <option value={'bottom'}>Bottom</option>
@@ -385,68 +425,91 @@ class Demo extends React.Component {
             <option value={'alternate-bot'}>Alternate Bot</option>
             </select>
         }
-      ].map((item, i) => {
-        return this.buildTable(this.buildOptionRow(item, i));
-      });
+      ].map(
+        (item, i) => this.buildOptionRow(item, i)
+      ));
+      let controlEnd = launchProgress >= LAUNCH_TIMELINE.length - 1;
 
-    return <div className='container' >
+    return <div style={{backgroundImage: "url('./itl_streak.jpg')", backgroundPosition: 'left'}}>
             <ToastContainer ref="toaster"
                         toastMessageFactory={ToastMessageFactory}
-                        className="toast-top-left" />
-            <canvas
-              style={{
-                zIndex: -1,
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                transition: 'all 1s ease-out',
-                width: '100%',
-                height: h,
-                backgroundColor: '#fff'}}>
-            </canvas>
-            <div style={{ transition: 'all 0.9s ease-out', position: 'relative', color: '#000', zIndex: 1, paddingBottom: 120}}>
-              <div style={{marginBottom: 30, textAlign: 'center'}} >
-                <h1>React Launch Timeline</h1>
+                        className="toast-top-right" />
+            <div className='container' style={{ overflow: 'auto', position: 'relative', color: '#fff', zIndex: 1, paddingBottom: 120}}>
+              <div className='' style={{margin: '0px 0px 30px 0px', padding: '20px'}}>
+                <div style={{fontSize: 32}}>React Launch Timeline</div>
                 <h4>{`npm install react-launch-timeline`}</h4>
                 <h4>{`yarn add react-launch-timeline`}</h4>
               </div>
-              <div style={{marginBottom: 30, textAlign: 'center'}}>
+
+              <div className='' style={{marginBottom: 30, padding: '0px 20px'}}>
                 <h3>{`Inspired by SpaceX's clean display for event sequences.`}</h3>
                 <h4>{`Depends on D3.js`}</h4>
               </div>
-              <div style={{marginBottom: 30, textAlign: 'center'}}>
-              <button
-                className='btn btn-lg btn-primary'
-                onClick={ done ? this.resetLaunch : this.doStart}>
-                { done ? 'Reset!' : 'Launch!'}
-              </button>
-              </div>
-              <div dangerouslySetInnerHTML={{__html: marked(stringThing)}} />
 
-              <div>
-              <div style={{display: 'flex', flexWrap: 'wrap'}}>
-                <div className='col-xs-12' style={SECTION_STYLE}>
-                  <h4 style={SECTION_TITLE_STYLE}>General</h4>
-                  {generalOptions}
+              <div style={{}} className='glassSection'>
+                <div style={{padding: 20}}>
+                  <span style={{fontSize: 24, marginRight: 12}}>ControlledTimeline</span>
+                  <span className='btn-group' style={{margin: '0'}}>
+                  <button
+                    className={'btn btn-primary '+(!launchProgress && 'disabled')}
+                    onClick={ !!launchProgress && this.changeLaunchProgress.bind(null, -1) }>
+                    { '-' }
+                  </button>
+                  <button
+                    className={'btn btn-primary '+(controlEnd && 'disabled')}
+                    onClick={ !controlEnd && this.changeLaunchProgress.bind(null, 1) }>
+                    { '+' }
+                  </button>
+                  </span>
+                  <div>Current Step: { launchProgress } ({ LAUNCH_TIMELINE[launchProgress].name })</div>
+                  <div style={{fontSize: 18}} dangerouslySetInnerHTML={{__html: marked(ControlledDesc)}} />
                 </div>
-                <div className='col-xs-12' style={SECTION_STYLE}>
-                  <h4 style={SECTION_TITLE_STYLE}>Dots</h4>
-                  {dotOptions}
+                {
+                  controlTimeline
+                }
+              </div>
+              <div className=' glassSection'>
+                <div style={{ padding: 20}}>
+                  <span style={{fontSize: 24, marginRight: 12}}>Timeline</span>
+                  <div style={{fontSize: 18}} dangerouslySetInnerHTML={{__html: marked(TimelineDesc)}} />
                 </div>
-                <div className='col-xs-12' style={SECTION_STYLE}>
-                  <h4 style={SECTION_TITLE_STYLE}>Labels</h4>
-                  {labelOptions}
-                </div>
-                <div className='col-xs-12' style={SECTION_STYLE}>
-                  <h4 style={SECTION_TITLE_STYLE}>Goal</h4>
-                  {goalOptions}
+              {
+                mainTimeline
+              }
+              </div>
+              <div style={{display: 'none'}} className=' glassSection'>
+                <div style={{padding: 20}}>
+                  <div style={{fontSize: 24}}>Properties</div>
+                  <table>
+                    <tbody>
+                    </tbody>
+                  </table>
                 </div>
               </div>
-              <div>
+              <div style={{background: 'rgba(0,0,0,0.4)'}}>
+                <div style={{ fontSize: 32, padding: 10}}>
+                  Customization
+                </div>
+                <div style={{display: 'flex', flexWrap: 'wrap'}}>
+                  <div className='col-xs-12' style={SECTION_STYLE}>
+                    <h4 style={SECTION_TITLE_STYLE}>General</h4>
+                    {generalOptions}
+                  </div>
+                  <div className='col-xs-12' style={SECTION_STYLE}>
+                    <h4 style={SECTION_TITLE_STYLE}>Dots</h4>
+                    {dotOptions}
+                  </div>
+                  <div className='col-xs-12' style={SECTION_STYLE}>
+                    <h4 style={SECTION_TITLE_STYLE}>Labels</h4>
+                    {labelOptions}
+                  </div>
+                  <div className='col-xs-12' style={SECTION_STYLE}>
+                    <h4 style={SECTION_TITLE_STYLE}>Goal</h4>
+                    {goalOptions}
+                  </div>
+                </div>
               </div>
             </div>
-            </div>
-            {mainTimeline}
           </div>
   }
 }

@@ -1,8 +1,8 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import Dot from './common/Dot'
 import Line from './common/Line'
 // array of curve functions and tites
-// import { line, extent, scaleTime, scaleLinear } from 'd3';
 import { line } from 'd3-shape'
 import { extent } from 'd3-array'
 import { scaleTime, scaleLinear } from 'd3-scale'
@@ -12,29 +12,30 @@ const defaultMargin = {
 }
 class Chart extends React.Component {
   static propTypes = {
-    width:React.PropTypes.number,
-    height:React.PropTypes.number,
-    progress:React.PropTypes.number,
-    labelPos:React.PropTypes.string,
-    title:React.PropTypes.string,
-    titleBkg:React.PropTypes.string,
-    mainBkg:React.PropTypes.string,
-    id:React.PropTypes.string,
-    data:React.PropTypes.array.isRequired,
-    xData:React.PropTypes.string.isRequired,
-    children:React.PropTypes.object,
-    margin:React.PropTypes.object,
-    complete: React.PropTypes.bool,
-    showDots: React.PropTypes.bool,
-    showLabels: React.PropTypes.bool,
-    showTicks: React.PropTypes.bool,
-    goalDotStyle:React.PropTypes.object,
-    goalCompleteDotStyle:React.PropTypes.object,
-    titleStyle:React.PropTypes.object,
-    textStyle:React.PropTypes.object,
-    dotStyle:React.PropTypes.object,
-    dotCompleteStyle:React.PropTypes.object,
-    style:React.PropTypes.object
+    width:PropTypes.number,
+    height:PropTypes.number,
+    progress:PropTypes.number,
+    labelPos:PropTypes.string,
+    title:PropTypes.string,
+    titleBkg:PropTypes.string,
+    mainBkg:PropTypes.string,
+    id:PropTypes.string,
+    data:PropTypes.array.isRequired,
+    xData:PropTypes.string.isRequired,
+    children:PropTypes.object,
+    margin:PropTypes.object,
+    complete: PropTypes.bool,
+    completed: PropTypes.number,
+    showDots: PropTypes.bool,
+    showLabels: PropTypes.bool,
+    showTicks: PropTypes.bool,
+    goalDotStyle:PropTypes.object,
+    goalCompleteDotStyle:PropTypes.object,
+    titleStyle:PropTypes.object,
+    textStyle:PropTypes.object,
+    dotStyle:PropTypes.object,
+    dotCompleteStyle:PropTypes.object,
+    style:PropTypes.object
   };
   static defaultProps = {
     width: 800,
@@ -57,19 +58,12 @@ class Chart extends React.Component {
       progress: null,
       width: props.width || 800
     }
-    this.createLineSegment = this.createLineSegment.bind(this)
     this.createChart = this.createChart.bind(this)
   }
-  componentDidMount () {
-  }
-  componentWillUnmount () {
-  }
-  componentDidUpdate (lastProps, lastState) {
-  }
   createChart (_self) {
-    let { margin } = _self.props
-    margin = Object.assign({}, defaultMargin, margin)
-    this.w = this.state.width - (margin.left + margin.right)
+    let { margin } = this.props
+    this.margin = margin = Object.assign({}, defaultMargin, margin)
+    this.w = this.props.width - (margin.left + margin.right)
 
     let height = this.props.height - (margin.top + margin.bottom)
 
@@ -95,9 +89,6 @@ class Chart extends React.Component {
 
     this.transform = 'translate(' + margin.left + ',' + margin.top + ')'
   }
-  createLineSegment (datum, i) {
-    return <Line path={this.line(datum)} key={i} fill={'#fe001a'} strokeWidth={2} />
-  }
   getOffset (offset, i) {
     switch (offset) {
       case 'alternate-top':
@@ -112,12 +103,12 @@ class Chart extends React.Component {
     }
   }
   render () {
-    let { width } = this.state
-
     let { title,
           data,
           complete,
+          completed,
           goalDotStyle,
+          width,
           goalCompleteDotStyle,
           dotStyle,
           dotCompleteStyle,
@@ -132,7 +123,7 @@ class Chart extends React.Component {
           titleBkg,
           height } = this.props
 
-        // Declare Arrays for SVG Elements
+    // Declare Arrays for SVG Elements
     let dots = []
     let elems
     let labels = []
@@ -144,24 +135,25 @@ class Chart extends React.Component {
     }
     let _self = this
     this.createChart(_self)
-        // Scale half the Height of the Graph Content Area
-        // To find Y Value of Horizontal Time Line
+    // Scale half the Height of the Graph Content Area
+    // To find Y Value of Horizontal Time Line
 
-          // Grab the Last Element as the Goal
-    var scaleHalf = this.yScale(this.h / 2)
+    // Grab the Last Element as the Goal
+    let scaleHalf = this.yScale(this.h / 2)
 
     goal = data.pop()
 
     goalScale = goal ? this.xScale(goal[this.props.xData]) : 0
 
     elems = data.map((d, i) => {
-            // Scale for X location of datum
+      // Scale for X location of datum
       let dX = this.xScale(d[this.props.xData])
       if (isNaN(dX)) return
-            // Offset is multipler for vertical direction of label/ticks
+      let itemDone = i <= completed
+      // Offset is multipler for vertical direction of label/ticks
       let offSet = this.getOffset(labelPos, i)
 
-            // Push onto Ticks Array
+      // Push onto Ticks Array
       ticks.push(<line
         key={'tick_' + i}
         strokeWidth={'2'}
@@ -170,7 +162,8 @@ class Chart extends React.Component {
         x2={this.xScale(d[this.props.xData])}
         y1={scaleHalf}
         y2={scaleHalf + (12 * offSet)} />)
-            // Push onto labels array for Item
+
+      // Push onto labels array for Item
       labels.push(<text
         textAnchor={i === 0 ? 'start' : 'middle'}
         key={'label_' + i}
@@ -182,10 +175,12 @@ class Chart extends React.Component {
         style={textStyle}>
         {d.name}
       </text>)
-            // Push onto Dots array for Item
+
+      // Push onto Dots array for Item
       dots.push(<Dot
-        key={'dot_' + i}
+        key={'dot_' + i + progress + itemDone}
         id={'dot_' + i}
+        done={i <= progress}
         x={dX}
         y={scaleHalf}
         r={'6'}
@@ -193,7 +188,7 @@ class Chart extends React.Component {
           fill: '#ddd',
           stroke: '#000',
           strokeWidth: 1,
-          ...(i <= progress ? dotCompleteStyle : dotStyle)
+          ...(i <= completed ? dotCompleteStyle : dotStyle)
         }} />)
             // If it's the last item, draw line to goal (which was removed)
       if (i === data.length - 1) {
@@ -204,14 +199,14 @@ class Chart extends React.Component {
             stroke: '#666',
             strokeLinecap: firstOrLast ? 'round' : '' }}
           key={i}
-          strokeWidth={14} />
+          strokeWidth={8} />
       }
       // Return line from point to next point in data
       return <Line
         path={this.line([d, data[i + 1]])}
         key={i}
         style={{ stroke: '#666', strokeLinecap: i === 0 ? 'round' : '' }}
-        strokeWidth={14} />
+        strokeWidth={8} />
     })
     // Add the Goal Label
     labels.push(
@@ -248,7 +243,7 @@ class Chart extends React.Component {
         <svg id={this.props.id} ref='svg' width={width} height={height}>
 
           <polygon
-            points={`0,0 300,0 345,24 ${width - 40},24 ${width - 40}, 250 0,250`}
+            points={`0,0 300,0 345,24 ${width - 40},24 ${width - 40}, ${height} 0,${height}`}
             style={{ fill: (titleBkg || 'navy'), stroke:'', strokeWidth:1 }} />
 
           <rect fill={mainBkg || 'grey'} y={32} width={width} height={height - 24} />
@@ -256,7 +251,7 @@ class Chart extends React.Component {
           <text
             id={'chart_title'}
             y='22'
-            x={this.props.margin.left - 4 || '20'}
+            x={this.margin.left - 4 || '20'}
             fontFamily='Verdana'
             fontSize='16'
             fill={'#fff'}
@@ -266,13 +261,13 @@ class Chart extends React.Component {
 
           <g transform={this.transform} fill='#333'>
             { showLabels && labels }
-            { elems }
             <Line
               path={this.line([this.props.data[0], goal])}
               key={'abc'}
-              stroke={'#aaa'}
-              strokeWidth={8}
-              strokeLinecap={'round'} />
+              style={{ strokeLinecap: 'round' }}
+              stroke={'#666'}
+              strokeWidth={14} />
+            { elems }
             { showTicks && ticks }
             { this.props.children }
             <g id='dots'>

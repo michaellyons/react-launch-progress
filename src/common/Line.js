@@ -1,12 +1,13 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 
 export default class Line extends React.Component {
   static propTypes = {
-    path:         React.PropTypes.string.isRequired,
-    stroke:       React.PropTypes.string,
-    fill:         React.PropTypes.string,
-    style:        React.PropTypes.object,
-    strokeWidth:  React.PropTypes.number
+    path:         PropTypes.string.isRequired,
+    stroke:       PropTypes.string,
+    fill:         PropTypes.string,
+    style:        PropTypes.object,
+    strokeWidth:  PropTypes.number
   };
 
   static defaultProps = {

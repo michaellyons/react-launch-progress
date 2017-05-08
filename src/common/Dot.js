@@ -1,13 +1,14 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 
 export default class Dot extends React.Component {
   static propTypes = {
-    id:React.PropTypes.any,
-    x:React.PropTypes.any,
-    y:React.PropTypes.any,
-    r:React.PropTypes.any,
-    className: React.PropTypes.string,
-    style:React.PropTypes.object
+    id: PropTypes.any,
+    x: PropTypes.any,
+    y: PropTypes.any,
+    r: PropTypes.any,
+    className:  PropTypes.string,
+    style: PropTypes.object
   };
   shouldComponentUpdate (nextProps, nextState) {
     let { r, x, y } = this.props
