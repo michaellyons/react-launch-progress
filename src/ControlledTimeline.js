@@ -223,13 +223,14 @@ export default class ControlledTimeline extends React.Component {
           key={width}
           xData={xData}
           progress={step}
-          complete={complete}
           completed={completed}
+          complete={complete}
+          completeScale={this.xScale(this.data[completed][xData])}
+          height={height}
+          width={width}
           data={this.data}
           {...chartProps}
-          style={{ position: 'relative', ...style }}
-          height={height}
-          width={width}>
+          style={{ position: 'relative', ...style }}>
           <ControlledProgress
             ref='timeline'
             style={{ fill: '#eee', ...progressStyle }}

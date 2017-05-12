@@ -26,6 +26,7 @@ class Chart extends React.Component {
     margin:PropTypes.object,
     complete: PropTypes.bool,
     completed: PropTypes.number,
+    completeScale:PropTypes.number,
     showDots: PropTypes.bool,
     showLabels: PropTypes.bool,
     showTicks: PropTypes.bool,
@@ -107,6 +108,7 @@ class Chart extends React.Component {
           data,
           complete,
           completed,
+          completeScale,
           goalDotStyle,
           width,
           goalCompleteDotStyle,
@@ -188,7 +190,7 @@ class Chart extends React.Component {
           fill: '#ddd',
           stroke: '#000',
           strokeWidth: 1,
-          ...(i <= completed ? dotCompleteStyle : dotStyle)
+          ...(dX <= completeScale ? dotCompleteStyle : dotStyle)
         }} />)
             // If it's the last item, draw line to goal (which was removed)
       if (i === data.length - 1) {

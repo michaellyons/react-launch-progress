@@ -200,7 +200,6 @@ export default class Timeline extends React.Component {
     } = this.props
 
     let complete = completed === data.length - 1
-    let percentile = 0
     let _self = this
     if (!data) return null
     let parseDate = timeParse('%Y-%m-%dT%H:%M:%S.%LZ')
@@ -230,18 +229,19 @@ export default class Timeline extends React.Component {
       // Calculate X-Scaled Value for NOW
       nowVal = this.xScale(parseDate(now))
       // Calculate percentile progress
-      percentile = nowVal / this.xScale(this.extent[1])
+      // percentile = nowVal / this.xScale(this.extent[1])
     }
 
     return (
       <div ref={'container'} style={{ position: 'relative', height: height, ...wrapStyle }}>
         <Chart
           key={width}
-          title={title + ' ' + ((percentile * 100).toLocaleString(undefined, { maximumFractionDigits: 2 })) + '%'}
+          title={title}
           xData={xData}
           titleBkg={titleBkg}
           titleStyle={titleStyle}
           progress={step}
+          completeScale={nowVal}
           textStyle={textStyle}
           mainBkg={mainBkg}
           margin={margin}

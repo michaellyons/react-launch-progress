@@ -446,6 +446,16 @@ class Demo extends React.Component {
                 <h4>{`Depends on D3.js`}</h4>
               </div>
 
+
+              <div className=' glassSection'>
+                <div style={{ padding: 20}}>
+                  <span style={{fontSize: 24, marginRight: 12}}>Timeline</span>
+                  <div style={{fontSize: 18}} dangerouslySetInnerHTML={{__html: marked(TimelineDesc)}} />
+                </div>
+              {
+                mainTimeline
+              }
+              </div>
               <div style={{}} className='glassSection'>
                 <div style={{padding: 20}}>
                   <span style={{fontSize: 24, marginRight: 12}}>ControlledTimeline</span>
@@ -467,15 +477,6 @@ class Demo extends React.Component {
                 {
                   controlTimeline
                 }
-              </div>
-              <div className=' glassSection'>
-                <div style={{ padding: 20}}>
-                  <span style={{fontSize: 24, marginRight: 12}}>Timeline</span>
-                  <div style={{fontSize: 18}} dangerouslySetInnerHTML={{__html: marked(TimelineDesc)}} />
-                </div>
-              {
-                mainTimeline
-              }
               </div>
               <div style={{display: 'none'}} className=' glassSection'>
                 <div style={{padding: 20}}>
