@@ -5,7 +5,7 @@ import moment from 'moment';
 import marked from 'marked';
 import './main.css';
 var ReactToastr = require("react-toastr");
-var {ToastContainer} = ReactToastr;
+var { ToastContainer } = ReactToastr;
 var ToastMessageFactory = React.createFactory(ReactToastr.ToastMessage.animation);
 
 const stringThing =
@@ -277,7 +277,37 @@ class Demo extends React.Component {
         return {...o, onComplete: () => this.addAlert('MARS: '+o.name, 'Step '+i+' Completed!')}
       })} /> :
       null;
-
+      let secondTimeline = THIS_HOUR ?
+      <Timeline
+        ref='mainChart'
+        title={'This Week'}
+        style={{display: 'flex'}}
+        wrapStyle={{zIndex: 2, display: 'flex'}}
+        titleBkg={titleBkg}
+        mainBkg={mainBkg}
+        onComplete={this.launchComplete}
+        labelPos={labelPos}
+        showDots={showDots}
+        showGoal={showGoal}
+        showLabels={showLabels}
+        showTicks={showTicks}
+        progressStyle={{
+          fill: progressColor
+        }}
+        dotStyle={{
+          fill: dotColor
+        }}
+        dotCompleteStyle={{
+          fill: dotCompleteColor
+        }}
+        goalCompleteDotStyle={{
+          fill: goalCompleteColor
+        }}
+        goalDotStyle={{fill: goalColor, stroke: goalStrokeColor}}
+        data={THIS_HOUR.map((o, i) => {
+          return {...o, onComplete: () => this.addAlert('MARS: '+o.name, 'Step '+i+' Completed!')}
+        })} /> :
+        null;
       let controlTimeline = LAUNCH_TIMELINE ?
       <ControlledTimeline
         ref='controlChart'
@@ -435,17 +465,16 @@ class Demo extends React.Component {
                         toastMessageFactory={ToastMessageFactory}
                         className="toast-top-right" />
             <div className='container' style={{ overflow: 'auto', position: 'relative', color: '#fff', zIndex: 1, paddingBottom: 120}}>
-              <div className='' style={{margin: '0px 0px 30px 0px', padding: '20px'}}>
+              <div className='' style={{textAlign: 'center', marginBottom: 30, padding: '20px'}}>
                 <div style={{fontSize: 32}}>React Launch Timeline</div>
                 <h4>{`npm install react-launch-timeline`}</h4>
                 <h4>{`yarn add react-launch-timeline`}</h4>
               </div>
 
-              <div className='' style={{marginBottom: 30, padding: '0px 20px'}}>
+              <div className='' style={{textAlign: 'center', marginBottom: 30, padding: '0px 20px'}}>
                 <h3>{`Inspired by SpaceX's clean display for event sequences.`}</h3>
                 <h4>{`Depends on D3.js`}</h4>
               </div>
-
 
               <div className=' glassSection'>
                 <div style={{ padding: 20}}>

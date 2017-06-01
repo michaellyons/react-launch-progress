@@ -14,6 +14,7 @@ class Chart extends React.Component {
   static propTypes = {
     width:PropTypes.number,
     height:PropTypes.number,
+    now:PropTypes.number,
     progress:PropTypes.number,
     labelPos:PropTypes.string,
     title:PropTypes.string,
@@ -25,8 +26,6 @@ class Chart extends React.Component {
     children:PropTypes.object,
     margin:PropTypes.object,
     complete: PropTypes.bool,
-    completed: PropTypes.number,
-    completeScale:PropTypes.number,
     showDots: PropTypes.bool,
     showLabels: PropTypes.bool,
     showTicks: PropTypes.bool,
@@ -107,8 +106,6 @@ class Chart extends React.Component {
     let { title,
           data,
           complete,
-          completed,
-          completeScale,
           goalDotStyle,
           width,
           goalCompleteDotStyle,
@@ -121,6 +118,7 @@ class Chart extends React.Component {
           showTicks,
           progress,
           labelPos,
+          now,
           mainBkg,
           titleBkg,
           height } = this.props
@@ -151,7 +149,7 @@ class Chart extends React.Component {
       // Scale for X location of datum
       let dX = this.xScale(d[this.props.xData])
       if (isNaN(dX)) return
-      let itemDone = i <= completed
+      let itemDone = dX <= now
       // Offset is multipler for vertical direction of label/ticks
       let offSet = this.getOffset(labelPos, i)
 
@@ -182,7 +180,7 @@ class Chart extends React.Component {
       dots.push(<Dot
         key={'dot_' + i + progress + itemDone}
         id={'dot_' + i}
-        done={i <= progress}
+        done={itemDone}
         x={dX}
         y={scaleHalf}
         r={'6'}
@@ -190,7 +188,7 @@ class Chart extends React.Component {
           fill: '#ddd',
           stroke: '#000',
           strokeWidth: 1,
-          ...(dX <= completeScale ? dotCompleteStyle : dotStyle)
+          ...(itemDone ? dotCompleteStyle : dotStyle)
         }} />)
             // If it's the last item, draw line to goal (which was removed)
       if (i === data.length - 1) {
@@ -243,13 +241,10 @@ class Chart extends React.Component {
     return (
       <div style={{ width: width, ...this.props.style }} key={width} ref={'container'}>
         <svg id={this.props.id} ref='svg' width={width} height={height}>
-
           <polygon
             points={`0,0 300,0 345,24 ${width - 40},24 ${width - 40}, ${height} 0,${height}`}
             style={{ fill: (titleBkg || 'navy'), stroke:'', strokeWidth:1 }} />
-
           <rect fill={mainBkg || 'grey'} y={32} width={width} height={height - 24} />
-
           <text
             id={'chart_title'}
             y='22'
@@ -260,7 +255,6 @@ class Chart extends React.Component {
             style={titleStyle}>
             {title}
           </text>
-
           <g transform={this.transform} fill='#333'>
             { showLabels && labels }
             <Line

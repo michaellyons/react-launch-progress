@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import Chart from './Chart'
-import Progress from './common/Progress'
+import AnimatedProgress from './common/Progress'
 
 import { line } from 'd3-shape'
 import { extent } from 'd3-array'
@@ -79,12 +79,17 @@ export default class Timeline extends React.Component {
     this.onComplete = this.onComplete.bind(this)
     this.createChart = this.createChart.bind(this)
     this.doThing = this.doThing.bind(this)
+    this.runUpdate = this.runUpdate.bind(this)
   }
   componentDidMount () {
     this.handleResize()
+    setInterval(this.runUpdate, 1000)
     window.addEventListener('resize', this.handleResize)
   }
   componentDidUpdate (lastProps, lastState) {
+  }
+  runUpdate () {
+    this.setState({ now: new Date().toISOString() })
   }
   componentWillUnmount () {
     window.removeEventListener('resize', this.handleResize)
@@ -172,7 +177,8 @@ export default class Timeline extends React.Component {
   render () {
     let {
       completed,
-      width
+      width,
+      now
     } = this.state
     let {
       labelPos,
@@ -205,7 +211,7 @@ export default class Timeline extends React.Component {
     let parseDate = timeParse('%Y-%m-%dT%H:%M:%S.%LZ')
     let parsedData
     let scaleHalf
-    let now = new Date().toISOString()
+    let endScale
     let nowVal
     if (data && data.length) {
       parsedData = data.map((d, i) => {
@@ -227,7 +233,9 @@ export default class Timeline extends React.Component {
       // Calculate Vertical Center Point
       scaleHalf = this.yScale(this.h / 2)
       // Calculate X-Scaled Value for NOW
+      endScale = this.xScale(this.extent[1])
       nowVal = this.xScale(parseDate(now))
+      nowVal = nowVal >= endScale ? endScale : nowVal
       // Calculate percentile progress
       // percentile = nowVal / this.xScale(this.extent[1])
     }
@@ -246,6 +254,7 @@ export default class Timeline extends React.Component {
           mainBkg={mainBkg}
           margin={margin}
           id={id}
+          now={nowVal}
           labelPos={labelPos}
           complete={complete}
           completed={completed}
@@ -260,8 +269,7 @@ export default class Timeline extends React.Component {
           style={{ position: 'relative', ...style }}
           height={height}
           width={width}>
-          <Progress
-            ref='timeline2'
+          <AnimatedProgress
             id={'chart_progress'}
             style={{ fill: '#eee', ...progressStyle }}
             height={8}

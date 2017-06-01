@@ -7,12 +7,9 @@ import { interpolate } from 'd3-interpolate'
 class AnimatedProgress extends Component {
   static propTypes = {
     onComplete: React.PropTypes.func,
-    onPointComplete: React.PropTypes.func,
     points: React.PropTypes.array,
     step: React.PropTypes.number,
-    play: React.PropTypes.bool,
     timed: React.PropTypes.bool,
-    autoStart: React.PropTypes.bool,
     y: React.PropTypes.number,
     height: React.PropTypes.number,
     width: React.PropTypes.number,
@@ -20,9 +17,8 @@ class AnimatedProgress extends Component {
   }
   constructor (props) {
     super(props)
-    let step = props.points ? props.points[props.step] : null
     this.state = {
-      width: step ? step.x : 0,
+      width: props.width,
       step: null,
       stop: false
     }
@@ -35,11 +31,6 @@ class AnimatedProgress extends Component {
     this._updateStateValue = this._updateStateValue.bind(this)
   }
   componentDidMount () {
-    // console.log('Mount Animated Progress!')
-    let { autoStart } = this.props
-    if (autoStart) {
-      this.start()
-    }
   }
   componentWillUnmount () {
     // console.log('Unmount Timer!')
@@ -47,10 +38,10 @@ class AnimatedProgress extends Component {
     this._setStopped = true
   }
   componentDidUpdate (lastProps, lastState) {
-    let { step, play } = this.props
-    if (lastProps.step !== step && play) {
-      // console.log('Step Change!')
-      this.start()
+    let { width } = this.props
+    if (lastProps.width !== width) {
+      console.log('Step Change!')
+      this.tween('width', this.state.width, width, 1000)
     }
   }
   start () {
@@ -139,11 +130,6 @@ class AnimatedProgress extends Component {
 
         if (value >= end) {
           // console.log("Hit the Step Point!");
-          if (this.props.step >= this.props.points.length) {
-            console.log('Done?!')
-          } else {
-            this.props.onPointComplete(this.props.step)
-          }
           return true
         }
         // _self.setState({width: value})
@@ -156,7 +142,7 @@ class AnimatedProgress extends Component {
     })
   }
   render () {
-    let theWidth = this.state.width || this.props.width || 0
+    let theWidth = this.state.width || 0
     let absoluteWidth = theWidth < 0 ? theWidth * -1 : theWidth
     let { y, height, style } = this.props
     return <rect

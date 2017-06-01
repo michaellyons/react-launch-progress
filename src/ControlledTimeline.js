@@ -2,7 +2,6 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import Chart from './Chart'
 import ControlledProgress from './common/ControlledProgress'
-// import { line, extent, scaleTime, scaleLinear, timeParse } from 'd3'
 
 import { line } from 'd3-shape'
 import { extent } from 'd3-array'
@@ -225,7 +224,7 @@ export default class ControlledTimeline extends React.Component {
           progress={step}
           completed={completed}
           complete={complete}
-          completeScale={this.xScale(this.data[completed][xData])}
+          now={this.xScale(this.data[completed][xData])}
           height={height}
           width={width}
           data={this.data}
