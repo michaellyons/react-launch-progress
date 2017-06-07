@@ -1,11 +1,11 @@
 {
-  "name": "react-launch-timeline",
+  "name": "react-launch-progress",
   "version": "0.2.2",
   "main": "dist/index.js",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/michaellyons/react-launch-timeline.git"
+    "url": "git+https://github.com/michaellyons/react-launch-progress.git"
   },
   "author": "Michael Lyons <mlyons000@gmail.com> (http://michaellyons.github.io)",
   "scripts": {

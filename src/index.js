@@ -1,7 +1,7 @@
-import Timeline from './Timeline'
-import ControlledTimeline from './ControlledTimeline'
+import TimeProgress from './TimeProgress'
+import Progress from './Progress'
 
 module.exports = {
-  Timeline,
-  ControlledTimeline
+  TimeProgress,
+  Progress
 }

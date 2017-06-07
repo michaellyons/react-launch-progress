@@ -1,16 +1,16 @@
 import React from 'react';
-import Timeline from '../src/Timeline';
+import TimeProgress from '../src/TimeProgress';
 import Chart from '../src/Chart';
 import { mount, shallow, render } from 'enzyme';
 import PropTypes from 'prop-types';
 import test_dates from './test_dates';
 let dates = test_dates();
 
-describe('(Component) Timeline', () => {
+describe('(Component) TimeProgress', () => {
   let _component;
 
   beforeEach(() => {
-    _component = shallow(<Timeline height={100} utc={true} xData='date' data={dates} />);
+    _component = shallow(<TimeProgress height={100} utc={true} xData='date' data={dates} />);
   })
 
   it('Should exist.', () => {

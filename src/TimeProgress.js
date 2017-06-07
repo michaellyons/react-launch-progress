@@ -14,6 +14,7 @@ const defaultMargin = {
 
 export default class Timeline extends React.Component {
   static propTypes = {
+    data: PropTypes.array,
     progress: PropTypes.number,
     step: PropTypes.number,
     height: PropTypes.number,
@@ -24,7 +25,6 @@ export default class Timeline extends React.Component {
     title: PropTypes.string,
     titleBkg: PropTypes.string,
     mainBkg: PropTypes.string,
-    data: PropTypes.array,
     margin: PropTypes.object,
     showDots: PropTypes.bool,
     showLabels: PropTypes.bool,
@@ -41,7 +41,7 @@ export default class Timeline extends React.Component {
     onComplete: PropTypes.func
   };
   static defaultProps = {
-    title: 'Timeline',
+    title: '',
     xData: 'date',
     height: 100,
     margin:{

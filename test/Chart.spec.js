@@ -1,5 +1,4 @@
 import React from 'react';
-import Timeline from '../src/Timeline';
 import Chart from '../src/Chart';
 import { mount, shallow, render } from 'enzyme';
 import test_dates from './test_dates';

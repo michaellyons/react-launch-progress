@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Timeline, ControlledTimeline } from '../src';
+import { TimeProgress, Progress } from '../src';
 import moment from 'moment';
 import marked from 'marked';
 import './main.css';
@@ -10,27 +10,31 @@ var ToastMessageFactory = React.createFactory(ReactToastr.ToastMessage.animation
 
 const stringThing =
 '```javascript\n\
-import Timeline from \'react-launch-timeline\' \
+import { Progress } from \'react-launch-progress\' \
 \n\
 class AwesomeComponent extends Component {\n\
   constructor(props) {\n\
     super(props);\n\
   }\n\
   render() {\n\
-    let { dates } = this.props;\n\
-    return <Timeline data={dates} />\n\
+    let { steps, step } = this.props;\n\
+    return <Progress step={step} data={steps} />\n\
   }\n\
 }\n\
 ```'
 
-const ControlledDesc =
+const StepProgressDesc =
 `Displays progress controlled by component's ***step*** property which indicates position in an array of event objects with a ***date*** key.
 `
-const TimelineDesc =
-`Displays progress through an array of event objects with a ***date*** key determined by current time.
+const TimeProgressDesc =
+`Displays progress determined by present time (now) through an array of event objects with a ***date*** key.
 `
+// Get the start of today. 00:00:00
 const today = moment().startOf('day');
+// Get the date of this week's Sunday
 const first_diff = today.date() - today.day();
+// If today is Sunday, set Start to Last Monday
+// Else set Start to Monday
 const first = first_diff == today.date()
               ? moment().date(first_diff - 6).startOf('day')
               : moment().date(first_diff + 1).startOf('day');
@@ -64,7 +68,8 @@ const timeLineItems = [
   [65, 'PAYLOAD ORBIT'],
   [70, 'PROFIT']
 ];
-// Create Launch Timeline with timeline items
+
+// Create Launch TimeProgress with timeline items
 const LAUNCH_TIMELINE = timeLineItems.map((item, i) => {
   return {
     name: item[1],
@@ -73,6 +78,7 @@ const LAUNCH_TIMELINE = timeLineItems.map((item, i) => {
     onComplete: () => { console.log(item[1] + ' Callback Action');}
   }
 });
+
 const SECTION_TITLE_STYLE = {
   margin: '0px 0px 20px 0px',
   padding: 10,
@@ -246,8 +252,8 @@ class Demo extends React.Component {
       dotCompleteColor
     } = this.state;
 
-    let mainTimeline = LAUNCH_TIMELINE ?
-    <Timeline
+    let mainTimeProgress = LAUNCH_TIMELINE ?
+    <TimeProgress
       ref='mainChart'
       title={'This Week'}
       style={{display: 'flex'}}
@@ -278,7 +284,7 @@ class Demo extends React.Component {
       })} /> :
       null;
       let secondTimeline = THIS_HOUR ?
-      <Timeline
+      <TimeProgress
         ref='mainChart'
         title={'This Week'}
         style={{display: 'flex'}}
@@ -308,8 +314,8 @@ class Demo extends React.Component {
           return {...o, onComplete: () => this.addAlert('MARS: '+o.name, 'Step '+i+' Completed!')}
         })} /> :
         null;
-      let controlTimeline = LAUNCH_TIMELINE ?
-      <ControlledTimeline
+      let controllProgress = LAUNCH_TIMELINE ?
+      <Progress
         ref='controlChart'
         id='controlChart'
         title={'LAUNCH: RCT 42'}
@@ -466,9 +472,9 @@ class Demo extends React.Component {
                         className="toast-top-right" />
             <div className='container' style={{ overflow: 'auto', position: 'relative', color: '#fff', zIndex: 1, paddingBottom: 120}}>
               <div className='' style={{textAlign: 'center', marginBottom: 30, padding: '20px'}}>
-                <div style={{fontSize: 32}}>React Launch Timeline</div>
-                <h4>{`npm install react-launch-timeline`}</h4>
-                <h4>{`yarn add react-launch-timeline`}</h4>
+                <div style={{fontSize: 32}}>React Launch Progress</div>
+                <h4>{`npm install react-launch-progress`}</h4>
+                <h4>{`yarn add react-launch-progress`}</h4>
               </div>
 
               <div className='' style={{textAlign: 'center', marginBottom: 30, padding: '0px 20px'}}>
@@ -476,18 +482,9 @@ class Demo extends React.Component {
                 <h4>{`Depends on D3.js`}</h4>
               </div>
 
-              <div className=' glassSection'>
-                <div style={{ padding: 20}}>
-                  <span style={{fontSize: 24, marginRight: 12}}>Timeline</span>
-                  <div style={{fontSize: 18}} dangerouslySetInnerHTML={{__html: marked(TimelineDesc)}} />
-                </div>
-              {
-                mainTimeline
-              }
-              </div>
               <div style={{}} className='glassSection'>
                 <div style={{padding: 20}}>
-                  <span style={{fontSize: 24, marginRight: 12}}>ControlledTimeline</span>
+                  <span style={{fontSize: 24, marginRight: 12}}>Progress</span>
                   <span className='btn-group' style={{margin: '0'}}>
                   <button
                     className={'btn btn-primary '+(!launchProgress && 'disabled')}
@@ -501,11 +498,20 @@ class Demo extends React.Component {
                   </button>
                   </span>
                   <div>Current Step: { launchProgress } ({ LAUNCH_TIMELINE[launchProgress].name })</div>
-                  <div style={{fontSize: 18}} dangerouslySetInnerHTML={{__html: marked(ControlledDesc)}} />
+                  <div style={{fontSize: 18}} dangerouslySetInnerHTML={{__html: marked(StepProgressDesc)}} />
                 </div>
                 {
-                  controlTimeline
+                  controllProgress
                 }
+              </div>
+              <div className=' glassSection'>
+                <div style={{ padding: 20}}>
+                  <span style={{fontSize: 24, marginRight: 12}}>TimeProgress</span>
+                  <div style={{fontSize: 18}} dangerouslySetInnerHTML={{__html: marked(TimeProgressDesc)}} />
+                </div>
+              {
+                mainTimeProgress
+              }
               </div>
               <div style={{display: 'none'}} className=' glassSection'>
                 <div style={{padding: 20}}>
