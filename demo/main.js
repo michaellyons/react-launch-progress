@@ -460,7 +460,7 @@ class Demo extends React.Component {
       ));
       let controlEnd = launchProgress >= LAUNCH_TIMELINE.length - 1;
 
-    return <div style={{backgroundImage: "url('./itl_streak.jpg')", backgroundPosition: 'left'}}>
+    return <div className='wall' style={{backgroundImage: "url('./crs11_vertical_day2_adjusted.jpg')"}}>
             <ToastContainer ref="toaster"
                         toastMessageFactory={ToastMessageFactory}
                         className="toast-top-right" />
