@@ -1,12 +1,12 @@
-# React Launch Timeline
+# React Launch Progress
 
 ### Inspired by SpaceX's clean display for event sequences.
 
-[![PeerDependencies](https://img.shields.io/david/peer/michaellyons/react-launch-timeline.svg?style=flat-square)](https://david-dm.org/michaellyons/react-launch-timeline#info=peerDependencies&view=list)
-[![Dependencies](https://img.shields.io/david/michaellyons/react-launch-timeline.svg?style=flat-square)](https://david-dm.org/michaellyons/react-launch-timeline)
-[![DevDependencies](https://img.shields.io/david/dev/michaellyons/react-launch-timeline.svg?style=flat-square)](https://david-dm.org/michaellyons/react-launch-timeline#info=devDependencies&view=list)
+[![PeerDependencies](https://img.shields.io/david/peer/michaellyons/react-launch-progress.svg?style=flat-square)](https://david-dm.org/michaellyons/react-launch-progress#info=peerDependencies&view=list)
+[![Dependencies](https://img.shields.io/david/michaellyons/react-launch-progress.svg?style=flat-square)](https://david-dm.org/michaellyons/react-launch-progress)
+[![DevDependencies](https://img.shields.io/david/dev/michaellyons/react-launch-progress.svg?style=flat-square)](https://david-dm.org/michaellyons/react-launch-progress#info=devDependencies&view=list)
 
-## [Github Page](https://michaellyons.github.io/react-launch-timeline)
+## [Github Page](https://michaellyons.github.io/react-launch-progress)
 
 ## Prerequisites
 
@@ -14,23 +14,23 @@ You should be using [NodeJS](https://www.nodejs.org) and [ReactJS](https://faceb
 
 ## Installation
 
-React Launch Timeline is available as an [npm package](https://www.npmjs.org/package/react-launch-timeline).
+React Launch Progress is available as an [npm package](https://www.npmjs.org/package/react-launch-progress).
 ```sh
-npm install react-launch-timeline [-S]
+npm install react-launch-progress [-S]
 ```
 or
 
 ```sh
-yarn add react-launch-timeline
+yarn add react-launch-progress
 ```
 
 ## Usage
 
-Using React Launch Timeline is very straightforward. Once it is included in your project, you can use the components this way:
+Using React Launch Progress is very straightforward. Once it is included in your project, you can use the components this way:
 
 ```js
 import React from 'react';
-import Timeline from 'react-launch-timeline';
+import { TimeProgress } from 'react-launch-timeline';
 
 let dates = [
   {
@@ -52,7 +52,7 @@ let dates = [
 ];
 
 const MyAwesomeReactComponent = () => (
-  <Timeline data={dates} />
+  <TimeProgress data={dates} />
 );
 
 export default MyAwesomeReactComponent;
