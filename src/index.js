@@ -1,7 +1,7 @@
 import TimeProgress from './TimeProgress'
-import Progress from './Progress'
+import StepProgress from './StepProgress'
 
 module.exports = {
   TimeProgress,
-  Progress
+  StepProgress
 }

@@ -1,13 +1,13 @@
 import React from 'react';
 import { mount, shallow, render } from 'enzyme';
-import AnimatedProgress from '../../src/common/AnimatedProgress';
+import ControlledProgress from '../../src/common/ControlledProgress';
 
 
-describe('(Component) Progress', () => {
+describe('(Component) Controlled Progress', () => {
   let _component;
 
   beforeEach(() => {
-    _component = shallow(<AnimatedProgress />);
+    _component = shallow(<ControlledProgress />);
   })
   it('Should Exist.', () => {
     expect(_component).to.exist;

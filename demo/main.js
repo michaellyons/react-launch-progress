@@ -1,16 +1,30 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { TimeProgress, Progress } from '../src';
+import { TimeProgress, StepProgress } from '../src';
 import moment from 'moment';
 import marked from 'marked';
+import ParallaxWrap from './Parallax';
+import LazyImage from './LazyImage';
+import styleProps from './style_props';
+
+import { TimeProgress as rawTimeProgress} from 'raw-loader!../src/TimeProgress'
 import './main.css';
 var ReactToastr = require("react-toastr");
 var { ToastContainer } = ReactToastr;
 var ToastMessageFactory = React.createFactory(ReactToastr.ToastMessage.animation);
+import {
+  getSomeSteps,
+  getThisWeek,
+  getThisDay,
+  getThisHour,
+  getThisMinute,
+  getLaunchTimeline
+} from './test_data';
 
-const stringThing =
+const ProgressCodeString  = () => {
+ return (
 '```javascript\n\
-import { Progress } from \'react-launch-progress\' \
+import { StepProgress } from \'react-launch-progress\' \
 \n\
 class AwesomeComponent extends Component {\n\
   constructor(props) {\n\
@@ -18,105 +32,47 @@ class AwesomeComponent extends Component {\n\
   }\n\
   render() {\n\
     let { steps, step } = this.props;\n\
-    return <Progress step={step} data={steps} />\n\
+    return <StepProgress step={step} data={steps} />\n\
   }\n\
 }\n\
-```'
+```')
+}
+const TimeProgressCodeString  = () => {
+ return (
+'```javascript\n\
+import moment from \'moment\' \n\
+import { TimeProgress } from \'react-launch-progress\' \
+\n\
+class AwesomeComponent extends Component {\n\
+  constructor(props) {\n\
+    super(props);\n\
+  }\n\
+  render() {\n\
+    let { data } = this.props;\n\
+    return <TimeProgress title={"This Week"} data={data} />\n\
+  }\n\
+}\n\
+```')
+}
 
 const StepProgressDesc =
-`Displays progress controlled by component's ***step*** property which indicates position in an array of event objects with a ***date*** key.
+`Displays progress controlled by component's ***step*** property which indicates position in an array of steps.
 `
 const TimeProgressDesc =
-`Displays progress determined by present time (now) through an array of event objects with a ***date*** key.
+`Displays progress determined by present time (now) through an array of objects scaled by a date-string.
 `
-// Get the start of today. 00:00:00
-const today = moment().startOf('day');
-// Get the date of this week's Sunday
-const first_diff = today.date() - today.day();
-// If today is Sunday, set Start to Last Monday
-// Else set Start to Monday
-const first = first_diff == today.date()
-              ? moment().date(first_diff - 6).startOf('day')
-              : moment().date(first_diff + 1).startOf('day');
 
-const THIS_WEEK = [];
-
-// We'll need a week's worth of days
-for (var i = 0; i <= 7; i++) {
-  // if (i == 2) continue;
-  var date = moment(first).add(i, 'days');
-  THIS_WEEK.push({
-    name: date.format('ddd DD/MM'),
-    date: date.toISOString(),
-    onComplete: () => {console.log("Woah!")}
-  })
-}
-
-// Set Launch Time to abritrary date in future
-const launchTime = moment('04-20-2020', 'MM-DD-YYYY');
-
-// Set them Launch Items with T -/+ liftoff times
-const timeLineItems = [
-  [-15, 'INTERNAL'],
-  [-5, 'STARTUP'],
-  [0, 'LIFTOFF'],
-  [15, 'MAX-Q'],
-  [25, 'MECO'],
-  [40, 'BOOSTBACK BURN'],
-  [50, 'ENTRY BURN'],
-  [55, 'STAGE 1 LANDING'],
-  [65, 'PAYLOAD ORBIT'],
-  [70, 'PROFIT']
-];
+const THIS_WEEK = getThisWeek();
 
 // Create Launch TimeProgress with timeline items
-const LAUNCH_TIMELINE = timeLineItems.map((item, i) => {
-  return {
-    name: item[1],
-    date: moment(launchTime).add(item[0], 'seconds').toISOString(),
-    onStart: () => { console.log(item[1] + ' DID START');},
-    onComplete: () => { console.log(item[1] + ' Callback Action');}
-  }
-});
-
+const LAUNCH_TIMELINE = getLaunchTimeline();
+const SOME_STEPS = getSomeSteps();
 const SECTION_TITLE_STYLE = {
   margin: '0px 0px 20px 0px',
-  padding: 10,
+  padding: '10px 0px',
   borderBottom: '1px solid lightgrey'
 };
-const SECTION_STYLE = {
-  padding: 10
-}
-const COLOR_INPUT_STYLE = {
-  position: 'relative',
-  height: 34,
-  width: 60,
-  boxShadow: '0px 0px 4px grey',
-  margin: 4,
-  borderRadius: 34,
-};
-const CHECKBOX_INPUT_STYLE = {
-  width: 18,
-  margin: '0px 36px',
-  textAlign: 'center'
-};
-const OPTION_STYLE = {
-};
-const OPTION_LABEL_STYLE = {
-};
-function constructTimeSeries() {
-  let THIS_HOUR = [];
-  for (let i = 0; i <= 5; i++) {
-    // if (i == 2) continue;
-    let date = moment().add(i, 'minutes');
-    THIS_HOUR.push({
-      name: date.format('h:mmA'),
-      onComplete: () => {console.log("WOah!", i)},
-      date: date.toISOString()
-    })
-  }
-  return THIS_HOUR;
-}
+
 class Demo extends React.Component {
   constructor(props) {
     super(props);
@@ -128,6 +84,7 @@ class Demo extends React.Component {
       showGoal: true,
       showLabels: true,
       showTicks: true,
+      showCode: {},
       titleBkg: '#111111',
       goalColor: '#00fefe',
       goalCompleteColor: '#19fe36',
@@ -136,8 +93,10 @@ class Demo extends React.Component {
       progressColor: '#EEEEEE',
       mainBkg: '#263238',
       dotColor: '#DDDDDD',
-      launchProgress: 0,
-      THIS_HOUR: constructTimeSeries(),
+      demoStep: 0,
+      THIS_HOUR: getThisHour(),
+      THIS_DAY: getThisDay(),
+      THIS_MINUTE: getThisMinute(),
       dotCompleteColor: '#0088d1'
     };
     this.addAlert = this.addAlert.bind(this)
@@ -149,6 +108,9 @@ class Demo extends React.Component {
     this.handleDataChange = this.handleDataChange.bind(this)
     this.handleCheckboxChange = this.handleCheckboxChange.bind(this)
     this.changeLaunchProgress = this.changeLaunchProgress.bind(this)
+    this.minuteComplete = this.minuteComplete.bind(this)
+    this.buildPropTable = this.buildPropTable.bind(this)
+    this.toggleCode = this.toggleCode.bind(this)
   }
   componentDidMount() {
     this.handleResize();
@@ -160,13 +122,31 @@ class Demo extends React.Component {
   handleResize () {
     this.setState({ ...this.getSize() })
   }
+  hourComplete() {
+    setTimeout(() => {
+      this.setState({ THIS_HOUR: getThisHour() }, () => {
+        this.refs.hourChart.startInterval();
+      });
+    }, 5000);
+  }
+  minuteComplete() {
+    setTimeout(() => {
+      this.setState({ THIS_MINUTE: getThisMinute() }, () => {
+        this.refs.minuteChart.startInterval();
+      });
+    }, 5000);
+  }
   getSize () {
     return {w: window.innerWidth, h: window.innerHeight}
   }
   changeLaunchProgress(val) {
-    let { launchProgress } = this.state;
-    launchProgress = val < 0 && launchProgress == 0 ? 0 : launchProgress + val;
-    this.setState({launchProgress: launchProgress});
+    let { demoStep } = this.state;
+    if (val > 0) {
+      demoStep = demoStep + val <= SOME_STEPS.length - 1 ? demoStep + val : demoStep;
+    } else {
+      demoStep = demoStep + val >= 0 ? demoStep + val : demoStep;
+    }
+    this.setState({demoStep});
   }
   addAlert (title = 'Toast!', message = 'This is a toast!') {
     this.refs.toaster.success(
@@ -180,7 +160,7 @@ class Demo extends React.Component {
   }
   resetLaunch() {
     this.refs.mainChart.reset();
-    this.setState({launchProgress: 0, done: false});
+    this.setState({demoStep: 0, done: false});
   }
   handleDataChange(key, e) {
     let { ...state } = this.state;
@@ -194,6 +174,13 @@ class Demo extends React.Component {
     console.log(key, state[key]);
     this.setState(state);
   }
+  toggleCode(key) {
+    let { ...state } = this.state;
+    let { showCode } = state;
+    showCode[key] = !showCode[key];
+    console.log(key, showCode[key]);
+    this.setState({showCode});
+  }
   doStart() {
     this.setState({launch: true, done: false});
     this.refs.mainChart.start();
@@ -202,36 +189,43 @@ class Demo extends React.Component {
     this.setState({done: true, launch: false});
     this.addAlert('Launch Completed!', 'Huge work! Such Profit! Wow!');
   }
-  buildOptionRow(row, i) {
-    return <tr key={row.key || i} style={OPTION_STYLE}>
-              <td className='col-xs-2'>{row.component}</td>
-              <td className='col-xs-2'>{row.key}</td>
-              <td style={OPTION_LABEL_STYLE}>{row.name}</td>
+  buildPropRow(row, i) {
+    return <tr key={i}>
+              <td className='propKey'>{row.key}</td>
+              <td className='propType'>{row.type}</td>
+              <td>{row.default}</td>
+              <td><div
+                style={{margin: ''}}
+                dangerouslySetInnerHTML={{__html: marked(row.desc || '')}} /></td>
            </tr>
   }
-  buildTable(rows) {
-    return <table style={{width: '100%'}}>
+  buildTable(rows, header = []) {
+    return <table className='displayTable' style={{padding: 20, width: '100%'}}>
+              <thead>
+              <tr>
+               {header.map((h, i) => <th style={{}} key={i}>{h}</th>)}
+               </tr>
+              </thead>
               <tbody>
                 {rows}
               </tbody>
             </table>
   }
-  buildColorDiv(key, value) {
-    return <div key={key} style={{position: 'relative', margin: '6px 0px', boxShadow: '0px 0px 4px grey', height: 34, width: 60, borderRadius: 34, background: value}}>
-          <input
-            type='color'
-            style={{...COLOR_INPUT_STYLE, position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0}}
-            value={value}
-            onChange={this.handleDataChange.bind(null, key)} />
-      </div>
+  buildPropTable(props) {
+    var rows = props.map((item, i) => {
+      return this.buildPropRow(item, i);
+    });
+    return this.buildTable(rows, ['Name', 'Type', 'Default', 'Description']);
   }
   render() {
-
     let {
       THIS_HOUR,
+      THIS_DAY,
+      THIS_MINUTE,
       h,
       w,
-      launchProgress,
+      showCode,
+      demoStep,
       titleBkg,
       progressColor,
       textColor,
@@ -252,225 +246,143 @@ class Demo extends React.Component {
       dotCompleteColor
     } = this.state;
 
-    let mainTimeProgress = LAUNCH_TIMELINE ?
+    // Are we at the end of the launch timeline events?
+    let controlEnd = demoStep >= LAUNCH_TIMELINE.length - 1;
+
+    // Gather all of the styles for injection into charts
+    let computedStyles = {
+      showDots,
+      showGoal,
+      showLabels,
+      showTicks,
+      mainBkg,
+      titleBkg,
+      labelPos,
+      progressStyle: {
+        fill: progressColor
+      },
+      dotStyle: {
+        fill: dotColor
+      },
+      dotCompleteStyle: {
+        fill: dotCompleteColor
+      },
+      goalDotStyle: {
+        fill: goalColor
+      },
+      goalCompleteDotStyle: {
+        fill: goalCompleteColor
+      },
+    }
+
+    // Create a StepProgress example.
+    let controllProgress = SOME_STEPS ?
+        <StepProgress
+          ref='controlChart'
+          id='controlChart'
+          title={'A few steps'}
+          {...computedStyles}
+          step={demoStep}
+          data={SOME_STEPS.map((o, i) => {
+            return {...o, onComplete: () => this.addAlert(o.name, 'Arrived at Step '+(i+1)+'!')}
+          })} /> :
+          null;
+    // Create a TimeProgress for this week.
+    let ThisWeekProgress = THIS_WEEK ?
     <TimeProgress
       ref='mainChart'
+      id={'ThisWeek'}
       title={'This Week'}
-      style={{display: 'flex'}}
-      wrapStyle={{zIndex: 2, display: 'flex'}}
-      titleBkg={titleBkg}
-      mainBkg={mainBkg}
       onComplete={this.launchComplete}
-      labelPos={labelPos}
-      showDots={showDots}
-      showGoal={showGoal}
-      showLabels={showLabels}
-      showTicks={showTicks}
-      progressStyle={{
-        fill: progressColor
-      }}
-      dotStyle={{
-        fill: dotColor
-      }}
-      dotCompleteStyle={{
-        fill: dotCompleteColor
-      }}
-      goalCompleteDotStyle={{
-        fill: goalCompleteColor
-      }}
-      goalDotStyle={{fill: goalColor, stroke: goalStrokeColor}}
+      {...computedStyles}
       data={THIS_WEEK.map((o, i) => {
-        return {...o, onComplete: () => this.addAlert('MARS: '+o.name, 'Step '+i+' Completed!')}
+        return {...o, onComplete: () => this.addAlert('MARS: '+o.name, 'Step '+(i+1)+' Completed!')}
       })} /> :
       null;
-      let secondTimeline = THIS_HOUR ?
+    // Create a TimeProgress for today.
+    let thisDayProgress = THIS_DAY ?
       <TimeProgress
-        ref='mainChart'
-        title={'This Week'}
-        style={{display: 'flex'}}
-        wrapStyle={{zIndex: 2, display: 'flex'}}
-        titleBkg={titleBkg}
-        mainBkg={mainBkg}
-        onComplete={this.launchComplete}
-        labelPos={labelPos}
-        showDots={showDots}
-        showGoal={showGoal}
-        showLabels={showLabels}
-        showTicks={showTicks}
-        progressStyle={{
-          fill: progressColor
-        }}
-        dotStyle={{
-          fill: dotColor
-        }}
-        dotCompleteStyle={{
-          fill: dotCompleteColor
-        }}
-        goalCompleteDotStyle={{
-          fill: goalCompleteColor
-        }}
-        goalDotStyle={{fill: goalColor, stroke: goalStrokeColor}}
-        data={THIS_HOUR.map((o, i) => {
+        ref='dayChart'
+        id="dayChart"
+        title={'This Day'}
+        {...computedStyles}
+        data={THIS_DAY.map((o, i) => {
           return {...o, onComplete: () => this.addAlert('MARS: '+o.name, 'Step '+i+' Completed!')}
         })} /> :
         null;
-      let controllProgress = LAUNCH_TIMELINE ?
-      <Progress
-        ref='controlChart'
-        id='controlChart'
-        title={'LAUNCH: RCT 42'}
-        style={{display: 'flex'}}
-        wrapStyle={{zIndex: 2, display: 'flex'}}
-        utc={true}
-        timed={false}
-        titleBkg={titleBkg}
-        margin={{right: 40}}
-        mainBkg={mainBkg}
-        onComplete={this.launchComplete}
-        labelPos={labelPos}
-        showDots={showDots}
-        showGoal={showGoal}
-        showLabels={showLabels}
-        showTicks={showTicks}
-        step={launchProgress}
-        progressStyle={{
-          fill: progressColor
-        }}
-        dotStyle={{
-          fill: dotColor
-        }}
-        dotCompleteStyle={{
-          fill: dotCompleteColor
-        }}
-        goalCompleteDotStyle={{
-          fill: goalCompleteColor
-        }}
-        goalDotStyle={{fill: goalColor, stroke: goalStrokeColor}}
-        data={LAUNCH_TIMELINE.map((o, i) => {
-          return {...o, onComplete: () => this.addAlert('RCT 42: '+o.name, 'Step '+i+' Completed!')}
-        })} /> :
-        null;
+    // Create TimeProgress for this hour.
+    let thisHourProgress = THIS_HOUR ?
+    <TimeProgress
+      ref='hourChart'
+      id="thisHour"
+      title={'This Hour'}
+      onComplete={this.hourComplete}
+      {...computedStyles}
+      data={THIS_HOUR.map((o, i) => {
+        return {...o, onComplete: () => this.addAlert('MARS: '+o.name, 'Step '+i+' Completed!')}
+      })} /> :
+      null;
+    // Create TimeProgress for this minute!
+    let thisMinuteProgress = THIS_MINUTE ?
+    <TimeProgress
+      ref='minuteChart'
+      id="thisMinute"
+      title={'This Minute'}
+      onComplete={this.minuteComplete}
+      {...computedStyles}
+      data={THIS_MINUTE.map((o, i) => {
+        return {...o, onComplete: () => this.addAlert('MARS: '+o.name, 'Step '+i+' Completed!')}
+      })} /> :
+      null;
+    let requiredProps = this.buildPropTable([
+      {
+        key: 'step',
+        type: 'integer',
+        desc: 'Current step index.'
+      },
+      {
+        key: 'data',
+        type: 'Array<String|Object{label:string}>',
+        desc: 'Array of strings which represent step names..'
+      },
+      {
+        key: 'speed',
+        default: '500',
+        type: 'string|number',
+        desc: 'Speed of progress animation (pixels/second)'
+      }
+    ]);
+    let timeProgressFunctionalProps = this.buildPropTable([
+      {
+        key: 'data',
+        type: 'Array<Object {date: Date}>',
+        desc: 'Array of objects with a date value.'
+      },
+      {
+        key: 'parseSpecifier',
+        type: 'string',
+        default: '%Y-%m-%dT%H:%M:%S.%LZ',
+        desc: 'Date-string specifier with d3-parsable directives.'+
+        ' [More Info](https://github.com/d3/d3-time-format/blob/master/README.md#timeParse)'
+      }
+    ]);
 
-      let generalOptions = this.buildTable([
-        {
-          name: 'Title Background',
-          key: 'titleBkg',
-          component: this.buildColorDiv('titleBkg', titleBkg)
-        },
-        {
-          name: 'Main Background',
-          key: 'mainBkg',
-          value: mainBkg,
-          component: this.buildColorDiv('mainBkg', mainBkg)
-        },
-        {
-          name: 'Text Color',
-          key: 'textStyle.fill',
-          value: textColor,
-          component: this.buildColorDiv('textColor', textColor)
-        },
-        {
-          name: 'Progress Color',
-          key: 'progressStyle.fill',
-          value: progressColor,
-          component: this.buildColorDiv('progressColor', progressColor)
-        }
-      ].map((item, i) => {
-        return this.buildOptionRow(item, i);
-      }));
-      let dotOptions = this.buildTable([
-        {
-          name: 'Show Dots',
-          key: 'showDots',
-          component: <label className="switch">
-          <input
-            type='checkbox'
-            style={CHECKBOX_INPUT_STYLE}
-            checked={showDots}
-            onChange={this.handleCheckboxChange.bind(null, 'showDots')} />
-            <div className="slider round"></div>
-            </label>
-        },
-        {
-          name: 'Default Color',
-          key: 'dotStyle.fill',
-          component: this.buildColorDiv('dotColor', dotColor)
-        },
-        {
-          name: 'Complete Color',
-          key: 'dotCompleteStyle.fill',
-          component: this.buildColorDiv('dotCompleteColor', dotCompleteColor)
-        }
-      ].map((item, i) => {
-        return this.buildOptionRow(item, i);
-      }));
-      let goalOptions = this.buildTable([
-        {
-          name: 'Default Color',
-          key: 'goalDotStyle.fill',
-          component: this.buildColorDiv('goalColor', goalColor)
-        },
-        {
-          name: 'Complete Color',
-          key: 'goalCompleteDotStyle.fill',
-          component: this.buildColorDiv('goalCompleteColor', goalCompleteColor)
-        }
-      ].map((item, i) => {
-        return this.buildOptionRow(item, i);
-      }));
-      let labelOptions = this.buildTable([
-        {
-          name: 'Show Labels',
-          key: 'showLabels',
-          component: <label className="switch">
-            <input
-            type='checkbox'
-            style={CHECKBOX_INPUT_STYLE}
-            checked={showLabels}
-            onChange={this.handleCheckboxChange.bind(null, 'showLabels')} />
-            <div className="slider round"></div>
-            </label>
-        },
-        {
-          name: 'Show Ticks',
-          key: 'showTicks',
-          component: <label className="switch">
-          <input
-            type='checkbox'
-            style={CHECKBOX_INPUT_STYLE}
-            checked={showTicks}
-            onChange={this.handleCheckboxChange.bind(null, 'showTicks')} />
-            <div className="slider round"></div>
-            </label>
-        },
-        {
-          name: 'Label Color',
-          key: 'labelStyle.fill',
-          component: this.buildColorDiv('labelColor', labelColor)
-        },
-        {
-          name: 'Label Positions',
-          key: 'labelPos',
-          component: <select
-            style={{width: 110, color: '#333'}}
-            onChange={this.handleDataChange.bind(null, 'labelPos')}
-            value={labelPos}>
-            <option value={'bottom'}>Bottom</option>
-            <option value={'top'}>Top</option>
-            <option value={'alternate-top'}>Alternate Top</option>
-            <option value={'alternate-bot'}>Alternate Bot</option>
-            </select>
-        }
-      ].map(
-        (item, i) => this.buildOptionRow(item, i)
-      ));
-      let controlEnd = launchProgress >= LAUNCH_TIMELINE.length - 1;
+    let StylePropSection = this.buildPropTable(styleProps);
 
-    return <div className='wall' style={{backgroundImage: "url('./crs11_vertical_day2_adjusted.jpg')"}}>
+    return <div className='wall'>
             <ToastContainer ref="toaster"
                         toastMessageFactory={ToastMessageFactory}
                         className="toast-top-right" />
-            <div className='container' style={{ overflow: 'auto', position: 'relative', color: '#fff', zIndex: 1, paddingBottom: 120}}>
+            <div style={{width: '100%', position: 'fixed', top: 0, left: 0}}>
+            <ParallaxWrap
+              full={true}
+              background={<LazyImage src={'./crs11_vertical_day2_adjusted.jpg'} />}
+              style={{ minHeight: h }}>
+              </ParallaxWrap>
+              </div>
+            <div
+              className='container'
+              style={{ overflow: 'auto', position: 'relative', color: '#fff', zIndex: 1, paddingBottom: 120}}>
               <div className='' style={{textAlign: 'center', marginBottom: 30, padding: '20px'}}>
                 <div style={{fontSize: 32}}>React Launch Progress</div>
                 <h4>{`npm install react-launch-progress`}</h4>
@@ -481,71 +393,100 @@ class Demo extends React.Component {
                 <h3>{`Inspired by SpaceX's clean display for event sequences.`}</h3>
                 <h4>{`Depends on D3.js`}</h4>
               </div>
-
-              <div style={{}} className='glassSection'>
-                <div style={{padding: 20}}>
-                  <span style={{fontSize: 24, marginRight: 12}}>Progress</span>
-                  <span className='btn-group' style={{margin: '0'}}>
-                  <button
-                    className={'btn btn-primary '+(!launchProgress && 'disabled')}
-                    onClick={ !!launchProgress && this.changeLaunchProgress.bind(null, -1) }>
-                    { '-' }
-                  </button>
-                  <button
-                    className={'btn btn-primary '+(controlEnd && 'disabled')}
-                    onClick={ !controlEnd && this.changeLaunchProgress.bind(null, 1) }>
-                    { '+' }
-                  </button>
-                  </span>
-                  <div>Current Step: { launchProgress } ({ LAUNCH_TIMELINE[launchProgress].name })</div>
-                  <div style={{fontSize: 18}} dangerouslySetInnerHTML={{__html: marked(StepProgressDesc)}} />
-                </div>
-                {
-                  controllProgress
-                }
-              </div>
-              <div className=' glassSection'>
-                <div style={{ padding: 20}}>
-                  <span style={{fontSize: 24, marginRight: 12}}>TimeProgress</span>
-                  <div style={{fontSize: 18}} dangerouslySetInnerHTML={{__html: marked(TimeProgressDesc)}} />
-                </div>
               {
-                mainTimeProgress
+                controllProgress
               }
+              <div style={{margin: '0px 0px 40px 0px'}} className='pad2 glassSection'>
+                <div className='flex' style={{marginBottom: 20}}>
+                  <span style={{fontSize: 24, margin: 'auto 0px'}}>{"<StepProgress />"}</span>
+                  <div style={{margin: 'auto 8px'}} className='btn-group'>
+                  <button className='btn btn-primary' onClick={this.changeLaunchProgress.bind(null, -1)}>
+                  {'-'}
+                  </button>
+                  <button className='btn btn-primary' onClick={this.changeLaunchProgress.bind(null, 1)}>
+                  {'+'}
+                  </button>
+                  </div>
+                  <div style={{marginLeft: 'auto'}}>
+                  <button
+                    className={'btn '+ (showCode['stepProgress'] ? 'btn-disabled' : 'btn-primary')}
+                    onClick={this.toggleCode.bind(null, 'stepProgress')}>
+                    {showCode['stepProgress'] ? 'Hide Code' : 'Show Code'}
+                  </button>
+                  </div>
+                </div>
+                <div style={{fontSize: 18}} dangerouslySetInnerHTML={{__html: marked(StepProgressDesc)}} />
+                <div className={'accordion ' + (!showCode['stepProgress'] && 'accordionClosed')}>
+                  <div className='accordionContent'>
+                    <div
+                      style={{margin: '10px 0'}}
+                      dangerouslySetInnerHTML={{__html: marked(ProgressCodeString())}} />
+                  </div>
+                </div>
+                <h3 style={SECTION_TITLE_STYLE}>{"Functional Properties"}</h3>
+                {requiredProps}
               </div>
-              <div style={{display: 'none'}} className=' glassSection'>
-                <div style={{padding: 20}}>
-                  <div style={{fontSize: 24}}>Properties</div>
-                  <table>
-                    <tbody>
-                    </tbody>
-                  </table>
+              {
+                thisMinuteProgress
+              }
+              <div style={{margin: '0px 0px 40px 0px'}}  className='glassSection'>
+                <div className='pad2'>
+                  <div className='flex' style={{fontSize: 24, marginBottom: 20}}>
+                   <span style={{fontSize: 24, margin: 'auto 0px'}}>
+                    {'<TimeProgress />'}
+                   </span>
+                    <div style={{marginLeft: 'auto'}}>
+                    <button
+                      className={'btn '+ (showCode['timeProgress'] ? 'btn-disabled' : 'btn-primary')}
+                      onClick={this.toggleCode.bind(null, 'timeProgress')}>
+                      {showCode['timeProgress'] ? 'Hide Code' : 'Show Code'}
+                    </button>
+                    </div>
+                  </div>
+                  <div
+                    style={{fontSize: 18}}
+                    dangerouslySetInnerHTML={{__html: marked(TimeProgressDesc)}} />
+                  <div className={'accordion ' + (!showCode['timeProgress'] && 'accordionClosed')}>
+                    <div className='accordionContent'>
+                      <div
+                        style={{margin: '10px 0'}}
+                        dangerouslySetInnerHTML={{__html: marked(TimeProgressCodeString())}} />
+                    </div>
+                  </div>
+                  <h3 style={SECTION_TITLE_STYLE}>{"Functional Properties"}</h3>
+                  {timeProgressFunctionalProps}
                 </div>
               </div>
-              <div style={{background: 'rgba(0,0,0,0.4)'}}>
-                <div style={{ fontSize: 32, padding: 10}}>
-                  Customization
+              <div style={{marginBottom: 40}} className='glassSection'>
+                <div className='pad2'>
+                  <h3 style={SECTION_TITLE_STYLE}>{"Examples"}</h3>
                 </div>
-                <div style={{display: 'flex', flexWrap: 'wrap'}}>
-                  <div className='col-xs-12' style={SECTION_STYLE}>
-                    <h4 style={SECTION_TITLE_STYLE}>General</h4>
-                    {generalOptions}
-                  </div>
-                  <div className='col-xs-12' style={SECTION_STYLE}>
-                    <h4 style={SECTION_TITLE_STYLE}>Dots</h4>
-                    {dotOptions}
-                  </div>
-                  <div className='col-xs-12' style={SECTION_STYLE}>
-                    <h4 style={SECTION_TITLE_STYLE}>Labels</h4>
-                    {labelOptions}
-                  </div>
-                  <div className='col-xs-12' style={SECTION_STYLE}>
-                    <h4 style={SECTION_TITLE_STYLE}>Goal</h4>
-                    {goalOptions}
-                  </div>
+                <div style={{marginBottom: 40}}>
+                  {
+                    ThisWeekProgress
+                  }
+                </div>
+                <div style={{marginBottom: 40}}>
+                  {
+                    thisDayProgress
+                  }
+                </div>
+                <div style={{marginBottom: 40}}>
+                  {
+                    thisHourProgress
+                  }
+                </div>
+              </div>
+
+              <div className='glassSection'>
+                <div className='pad2'>
+                  <h3 id="CustomProps" style={SECTION_TITLE_STYLE}>Customization Properties</h3>
+                  {StylePropSection}
                 </div>
               </div>
             </div>
+
+
           </div>
   }
 }

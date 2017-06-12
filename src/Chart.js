@@ -22,10 +22,12 @@ class Chart extends React.Component {
     mainBkg:PropTypes.string,
     id:PropTypes.string,
     data:PropTypes.array.isRequired,
-    xData:PropTypes.string.isRequired,
+    xData:PropTypes.string,
+    xScale:PropTypes.func.isRequired,
     children:PropTypes.object,
     margin:PropTypes.object,
     complete: PropTypes.bool,
+    onComplete: PropTypes.func,
     showDots: PropTypes.bool,
     showLabels: PropTypes.bool,
     showTicks: PropTypes.bool,
@@ -45,6 +47,12 @@ class Chart extends React.Component {
     showDots: true,
     showLabels: true,
     showTicks: true,
+    xScale: scaleLinear().range([0, 800]),
+    goalDotStyle: {
+      fill: '#ddd',
+      stroke: '#00fefe',
+      strokeWidth: 2
+    },
     textStyle: {
       fill: '#fff'
     },
@@ -60,8 +68,13 @@ class Chart extends React.Component {
     }
     this.createChart = this.createChart.bind(this)
   }
+  componentDidUpdate (lastProps, lastState) {
+    if (!lastProps.complete && this.props.complete && this.props.onComplete) {
+      this.props.onComplete()
+    }
+  }
   createChart (_self) {
-    let { margin } = this.props
+    let { margin, xScale } = this.props
     this.margin = margin = Object.assign({}, defaultMargin, margin)
     this.w = this.props.width - (margin.left + margin.right)
 
@@ -81,7 +94,7 @@ class Chart extends React.Component {
 
     this.line = line()
             .x((d) => {
-              return d && this.xScale(d[_self.props.xData] || 0)
+              return d && xScale(d[_self.props.xData] || 0)
             })
             .y((d) => {
               return this.yScale(height / 2)
@@ -106,6 +119,7 @@ class Chart extends React.Component {
     let { title,
           data,
           complete,
+          xScale,
           goalDotStyle,
           width,
           goalCompleteDotStyle,
@@ -121,7 +135,8 @@ class Chart extends React.Component {
           now,
           mainBkg,
           titleBkg,
-          height } = this.props
+          height
+        } = this.props
 
     // Declare Arrays for SVG Elements
     let dots = []
@@ -143,54 +158,62 @@ class Chart extends React.Component {
 
     goal = data.pop()
 
-    goalScale = goal ? this.xScale(goal[this.props.xData]) : 0
+    goalScale = goal ? xScale(goal[this.props.xData]) : 0
 
     elems = data.map((d, i) => {
       // Scale for X location of datum
-      let dX = this.xScale(d[this.props.xData])
+      let dX = xScale(d[this.props.xData])
       if (isNaN(dX)) return
-      let itemDone = dX <= now
-      // Offset is multipler for vertical direction of label/ticks
-      let offSet = this.getOffset(labelPos, i)
 
+      let offSet = this.getOffset(labelPos, i)
+      // if Pos is less than or equal to now's position
+      // it's done
+      let itemDone = dX <= now
       // Push onto Ticks Array
-      ticks.push(<line
-        key={'tick_' + i}
-        strokeWidth={'2'}
-        stroke={'#ddd'}
-        x1={this.xScale(d[this.props.xData])}
-        x2={this.xScale(d[this.props.xData])}
-        y1={scaleHalf}
-        y2={scaleHalf + (12 * offSet)} />)
+      if (showTicks) {
+        ticks.push(<line
+          key={'tick_' + i}
+          strokeWidth={'2'}
+          stroke={'#ddd'}
+          x1={xScale(d[this.props.xData])}
+          x2={xScale(d[this.props.xData])}
+          y1={scaleHalf}
+          y2={scaleHalf + (12 * offSet)} />)
+      }
 
       // Push onto labels array for Item
-      labels.push(<text
-        textAnchor={i === 0 ? 'start' : 'middle'}
-        key={'label_' + i}
-        x={dX}
-        y={offSet < 0 ? scaleHalf - 14 : scaleHalf + 28}
-        fontFamily='Verdana'
-        fontSize='16'
-        fill={'#fff'}
-        style={textStyle}>
-        {d.name}
-      </text>)
+      if (showLabels) {
+        labels.push(<text
+          textAnchor={i === 0 ? 'start' : 'middle'}
+          key={'label_' + i}
+          x={dX}
+          y={offSet < 0 ? scaleHalf - 14 : scaleHalf + 28}
+          fontFamily='Verdana'
+          fontSize='16'
+          fill={'#fff'}
+          style={textStyle}>
+          {d.name}
+        </text>)
+      }
 
       // Push onto Dots array for Item
-      dots.push(<Dot
-        key={'dot_' + i + progress + itemDone}
-        id={'dot_' + i}
-        done={itemDone}
-        x={dX}
-        y={scaleHalf}
-        r={'6'}
-        style={{
-          fill: '#ddd',
-          stroke: '#000',
-          strokeWidth: 1,
-          ...(itemDone ? dotCompleteStyle : dotStyle)
-        }} />)
-            // If it's the last item, draw line to goal (which was removed)
+      if (showDots) {
+        dots.push(<Dot
+          key={'dot_' + i + progress + itemDone}
+          id={'dot_' + i}
+          done={itemDone}
+          x={dX}
+          y={scaleHalf}
+          r={'6'}
+          style={{
+            fill: '#ddd',
+            stroke: '#000',
+            strokeWidth: 1,
+            ...(itemDone ? dotCompleteStyle : dotStyle)
+          }} />)
+      }
+
+      // If it's the last item, draw line to goal (which was removed)
       if (i === data.length - 1) {
         let firstOrLast = i === 0 || i === this.props.data.length - 1
         return <Line
@@ -208,13 +231,15 @@ class Chart extends React.Component {
         style={{ stroke: '#666', strokeLinecap: i === 0 ? 'round' : '' }}
         strokeWidth={8} />
     })
+    let goalOffSet = this.getOffset(labelPos, data.length)
+
     // Add the Goal Label
     labels.push(
       <text
         key={'goal_label'}
         id={'goal_label'}
         x={goalScale}
-        y='50'
+        y={goalOffSet < 0 ? scaleHalf - 14 : scaleHalf + 28}
         fill={'#fff'}
         textAnchor='end'
         fontFamily='Verdana'
@@ -228,12 +253,9 @@ class Chart extends React.Component {
       <Dot
         key={'goal_dot' + complete}
         id={'goal_dot'}
-        x={this.xScale(goal[this.props.xData])}
+        x={xScale(goal[this.props.xData])}
         r={'6'}
         style={{
-          fill: '#ddd',
-          stroke: '#00fefe',
-          strokeWidth: 2,
           ...(complete ? goalCompleteDotStyle : goalDotStyle)
         }}
         y={scaleHalf} />)

@@ -1,3 +1,9 @@
+body {
+  font-family: Arial;
+}
+p {
+  margin: 10px 0;
+}
 .button {
 
 }
@@ -6,10 +12,54 @@
    background-size: cover;
    background-repeat: no-repeat;;
 }
-
+.flex {
+  display: flex;
+}
+.flexW {
+  display: flex;
+}
+.propType {
+  color: #f18fb0;
+}
+.propKey {
+  color: #8ca3d2;
+}
+.paper {
+  background: whitesmoke;
+  padding: 20px;
+  color: black;
+  border-radius: 4px;
+}
 .glassSection {
-  margin-bottom: 20px;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0,0,0,0.7);
+}
+.accordion {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.42s ease-in-out;
+}
+.accordionClosed {
+  height: 0px;
+}
+.accordionContent {
+  position: relative;
+  top: 0
+}
+.accordionClosed .accordionContent {
+  left: 0;
+  top: -100%;
+}
+.displayTable {
+  font-size: 1.2em;
+  width: 100%;
+}
+.displayTable tr {
+  padding: 10px 0px;
+  border-bottom: 1px solid lightgrey;
+}
+.displayTable th {
+  padding: 10px 0px;
 }
 /* The switch - the box around the slider */
 .switch {
@@ -59,6 +109,10 @@ input:checked + .slider:before {
   -webkit-transform: translateX(26px);
   -ms-transform: translateX(26px);
   transform: translateX(26px);
+}
+
+.pad2 {
+  padding: 20px;
 }
 
 /* Rounded sliders */

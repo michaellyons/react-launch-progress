@@ -5,14 +5,13 @@ import ControlledProgress from './common/ControlledProgress'
 
 import { line } from 'd3-shape'
 import { extent } from 'd3-array'
-import { scaleTime, scaleLinear } from 'd3-scale'
-import { timeParse } from 'd3-time-format'
+import { scaleLinear } from 'd3-scale'
 
 const defaultMargin = {
   top: 40, right: 40, bottom: 10, left: 50
 }
 
-export default class ControlledTimeline extends React.Component {
+export default class StepProgress extends React.Component {
   static propTypes = {
     progress: PropTypes.number,
     step: PropTypes.number,
@@ -23,8 +22,8 @@ export default class ControlledTimeline extends React.Component {
     title: PropTypes.string,
     titleBkg: PropTypes.string,
     mainBkg: PropTypes.string,
-    parseSpecifier: PropTypes.string,
     duration: PropTypes.number,
+    speed: PropTypes.number,
     data: PropTypes.array,
     margin: PropTypes.object,
     showDots: PropTypes.bool,
@@ -42,15 +41,13 @@ export default class ControlledTimeline extends React.Component {
     onComplete: PropTypes.func
   };
   static defaultProps = {
-    title: 'Timeline',
-    xData: 'date',
     height: 100,
-    parseSpecifier: '%Y-%m-%dT%H:%M:%S.%LZ',
     margin:{
       top: 40, right: 40, bottom: 10, left: 50
     },
     showDots: true,
-    duration: 600,
+    speed: 800,
+    xData: 'date',
     showGoal: true,
     textStyle: {
       fontSize: '14px',
@@ -66,7 +63,6 @@ export default class ControlledTimeline extends React.Component {
   constructor (props) {
     super(props)
     this.data = []
-    this.parse = timeParse('%Y-%m-%dT%H:%M:%S%Z')
     this.state = {
       updateTime: 0,
       complete: false,
@@ -121,7 +117,7 @@ export default class ControlledTimeline extends React.Component {
 
     this.h = height
 
-    this.xScale = scaleTime()
+    this.xScale = scaleLinear()
           .domain(this.extent)
           .rangeRound([0, this.w])
 
@@ -163,14 +159,6 @@ export default class ControlledTimeline extends React.Component {
       this.props.onComplete()
     }
   }
-  start () {
-    this.setState({ play: true, complete: false })
-    let { data } = this.props
-    if (data[0].onComplete && typeof data[0].onComplete === 'function') {
-      data[0].onComplete()
-    }
-    this.refs.timeline.start()
-  }
   render () {
     let {
       completed,
@@ -181,9 +169,9 @@ export default class ControlledTimeline extends React.Component {
         duration,
         progress,
         step,
+        speed,
         data,
         xData,
-        parseSpecifier,
         progressStyle,
         wrapStyle,
         style,
@@ -194,25 +182,24 @@ export default class ControlledTimeline extends React.Component {
 
     let _self = this
     if (!data) return null
-    let parseDate = timeParse('%Y-%m-%dT%H:%M:%S.%LZ')
     let parsedData
     let scaleHalf
+    let stepScale
     if (data && data.length) {
       parsedData = data.map((d, i) => {
         return {
           ...d,
-          date: parseDate(d.date)
+          date: i
         }
-      }).sort((a, b) => {
-        if (!a || !b) return 0
-        if (!a[xData] || !b[xData]) return 0
-        return a[xData].getTime() - b[xData].getTime()
       })
       this.data = parsedData
       this.extent = extent(parsedData, function (d) {
         return d[xData]
       })
       this.createChart(_self)
+      if (this.data[step]) {
+        stepScale = this.xScale(this.data[step][xData])
+      }
       scaleHalf = this.yScale(this.h / 2)
     }
 
@@ -221,10 +208,10 @@ export default class ControlledTimeline extends React.Component {
         <Chart
           key={width}
           xData={xData}
-          progress={step}
           completed={completed}
+          xScale={this.xScale}
           complete={complete}
-          now={this.xScale(this.data[completed][xData])}
+          now={stepScale}
           height={height}
           width={width}
           data={this.data}
@@ -232,13 +219,15 @@ export default class ControlledTimeline extends React.Component {
           style={{ position: 'relative', ...style }}>
           <ControlledProgress
             ref='timeline'
+            id={'chart_progress'}
             style={{ fill: '#eee', ...progressStyle }}
             height={8}
             data={this.data}
             tweenDone={this.doThing}
             y={scaleHalf - 4}
-            progress={(this.data[step] && this.xScale(this.data[step][xData])) || 0}
+            progress={stepScale || 0}
             duration={duration}
+            speed={speed}
             complete={complete} />
         </Chart>
       </div>)

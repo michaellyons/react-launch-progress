@@ -10,7 +10,7 @@ describe('(Component) TimeProgress', () => {
   let _component;
 
   beforeEach(() => {
-    _component = shallow(<TimeProgress height={100} utc={true} xData='date' data={dates} />);
+    _component = shallow(<TimeProgress height={100} xData='date' data={dates} />);
   })
 
   it('Should exist.', () => {

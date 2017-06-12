@@ -7,7 +7,7 @@ function getTestDates(parsed = false) {
   for (let i = 0; i <= 7; i++) {
     let date = new Date(now.getTime() + 86400000 * i)
     dates[i] = {
-      date: parsed ? parseDate(date) : date,
+      date: parsed ? parseDate(date) : date.toUTCString(),
       name: i
     }
   }

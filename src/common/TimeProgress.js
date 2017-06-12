@@ -7,7 +7,7 @@ import { interpolate } from 'd3-interpolate'
 
 class ControlledProgress extends Component {
   static propTypes = {
-    speed: PropTypes.number,
+    duration: PropTypes.number,
     progress: PropTypes.number,
     y: PropTypes.number,
     height: PropTypes.number,
@@ -56,14 +56,9 @@ class ControlledProgress extends Component {
       } else {
         return
       }
-      // Standardize speed.
-      // Get Diff's proportion of duration
-      // Default speed 500px/second
-      // If diff is 500px should take 1 second.(500px / 500px/s) =  ; 1 * 1000ms = 1 s
-      // and translate to milliseconds
-      let speed = (diff / this.props.speed) * 1000
-      this.tween = func('width', this.state.width, parsedNext, speed).then((timer) => {
-        console.log('Tween End!')
+
+      this.tween = func('width', this.state.width, parsedNext, this.props.duration).then((timer) => {
+        // console.log("Tween End!");
         if (this.props.tweenDone && typeof this.props.tweenDone === 'function') {
           this.props.tweenDone()
         }

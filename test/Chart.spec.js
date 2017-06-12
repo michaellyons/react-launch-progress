@@ -3,14 +3,14 @@ import Chart from '../src/Chart';
 import { mount, shallow, render } from 'enzyme';
 import test_dates from './test_dates';
 let dates = test_dates(true);
+import { extent } from 'd3-array'
+import { scaleTime, scaleLinear } from 'd3-scale'
+
 describe('(Component) Chart', () => {
   let wrapper;
 
   beforeEach(() => {
     wrapper = mount(<Chart height={100} xData={'date'} title="test-chart" showDots={true} data={dates} />);
-  });
-  it('Should exist.', () => {
-    expect(wrapper).to.exist
   });
 
   describe('(General)', () => {
@@ -36,7 +36,7 @@ describe('(Component) Chart', () => {
 
     it ('Renders Correct Amount of Dots', () => {
       // There will be TestDates + 1 dots because of Goal Dot
-      expect( wrapper.find('#dots').children() ).to.have.length(dates.length);
+      expect( wrapper.find('#dots').children() ).to.have.length(dates.length + 1);
     });
 
   });

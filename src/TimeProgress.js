@@ -1,8 +1,7 @@
-import React from 'react'
+import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import Chart from './Chart'
-import AnimatedProgress from './common/Progress'
-
+import TimeProgress from './common/TimeProgress'
 import { line } from 'd3-shape'
 import { extent } from 'd3-array'
 import { scaleTime, scaleLinear } from 'd3-scale'
@@ -11,15 +10,16 @@ import { timeParse } from 'd3-time-format'
 const defaultMargin = {
   top: 40, right: 40, bottom: 10, left: 50
 }
-
-export default class Timeline extends React.Component {
+/**
+ * General component description.
+ */
+class TimeProgressChart extends Component {
   static propTypes = {
     data: PropTypes.array,
-    progress: PropTypes.number,
-    step: PropTypes.number,
     height: PropTypes.number,
     width: PropTypes.number,
     xData: PropTypes.string,
+    parseSpecifier: PropTypes.string,
     id: PropTypes.string,
     labelPos: PropTypes.string,
     title: PropTypes.string,
@@ -38,17 +38,25 @@ export default class Timeline extends React.Component {
     progressStyle:PropTypes.object,
     wrapStyle:PropTypes.object,
     style:PropTypes.object,
+    dotColor: PropTypes.string,
+    goalColor: PropTypes.string,
+    dotCompleteColor: PropTypes.string,
+    goalCompleteColor: PropTypes.string,
+    progressColor: PropTypes.string,
+    textColor: PropTypes.string,
     onComplete: PropTypes.func
   };
   static defaultProps = {
     title: '',
     xData: 'date',
     height: 100,
+    parseSpecifier: '%Y-%m-%dT%H:%M:%S.%LZ',
     margin:{
       top: 40, right: 40, bottom: 10, left: 50
     },
     showDots: true,
     showGoal: true,
+    dotCompleteColor: '#0088d1',
     textStyle: {
       fontSize: '14px',
       fill: '#fffff'
@@ -63,12 +71,10 @@ export default class Timeline extends React.Component {
   constructor (props) {
     super(props)
     this.data = []
-    this.parse = timeParse('%Y-%m-%dT%H:%M:%SZ')
     this.state = {
       updateTime: 0,
       complete: false,
-      completed: props.progress || 0,
-      progress: null,
+      now: new Date().toISOString(),
       width: props.width || 1000
     }
     this.getWidth = this.getWidth.bind(this)
@@ -78,17 +84,29 @@ export default class Timeline extends React.Component {
     this._updateStateValue = this._updateStateValue.bind(this)
     this.onComplete = this.onComplete.bind(this)
     this.createChart = this.createChart.bind(this)
-    this.doThing = this.doThing.bind(this)
     this.runUpdate = this.runUpdate.bind(this)
+    this.startInterval = this.startInterval.bind(this)
+    this.clearInterval = this.clearInterval.bind(this)
   }
   componentDidMount () {
     this.handleResize()
-    setInterval(this.runUpdate, 1000)
+    this.createChart(this)
+    this.startInterval()
     window.addEventListener('resize', this.handleResize)
   }
   componentDidUpdate (lastProps, lastState) {
   }
+  startInterval () {
+    if (this.idealSpeed) {
+      // console.log("Start Interval with speed: ", this.idealSpeed)
+      this.interval = setInterval(this.runUpdate, this.idealSpeed)
+    }
+  }
+  clearInterval () {
+    clearInterval(this.interval)
+  }
   runUpdate () {
+    // console.log("Run Update!", this.props.id);
     this.setState({ now: new Date().toISOString() })
   }
   componentWillUnmount () {
@@ -101,9 +119,11 @@ export default class Timeline extends React.Component {
     return this.refs.container.offsetWidth
   }
   reset () {
-    this.setState({ completed: this.props.progress || 0, complete: false })
+    this.setState({ complete: false })
   }
   complete () {
+    this.clearInterval()
+    this.props.onComplete()
     this.setState({ complete: true, play: false })
   }
   _getStateValue (prop) {
@@ -115,13 +135,31 @@ export default class Timeline extends React.Component {
     this.setState(state)
   }
   createChart (_self) {
-    let { margin } = _self.props
+    let { margin, xData, data, parseSpecifier } = _self.props
+    let parseDate = this.parseDate = timeParse(parseSpecifier)
+
+    let parsedData = data.map((d, i) => {
+      return {
+        ...d,
+        date: parseDate(d.date)
+      }
+    }).sort((a, b) => {
+      if (!a || !b) return 0
+      if (!a[xData] || !b[xData]) return 0
+      return a[xData].getTime() - b[xData].getTime()
+    })
+    this.data = parsedData
+    this.extent = extent(parsedData, function (d) {
+      return d[xData]
+    })
     margin = Object.assign({}, defaultMargin, margin)
     this.w = this.state.width - (margin.left + margin.right)
+    if (this.extent[1] && this.extent[0]) {
+      this.secondsTotal = (this.extent[1].getTime() - this.extent[0].getTime()) / 1000
+    }
+    this.idealSpeed = this.secondsTotal / this.w
 
-    let height = this.props.height - (margin.top + margin.bottom)
-
-    this.h = height
+    let height = this.h = this.props.height - (margin.top + margin.bottom)
 
     this.xScale = scaleTime()
           .domain(this.extent)
@@ -141,23 +179,6 @@ export default class Timeline extends React.Component {
 
     this.transform = 'translate(' + this.props.margin.left + ',' + this.props.margin.top + ')'
   }
-  doThing () {
-    let { data, step } = this.props
-    // console.log('Do thing! ', step);
-    let stepFocus = step
-    let datum = data[stepFocus]
-    // If item has onComplete function, call it
-    if (datum.onComplete && typeof datum.onComplete === 'function') {
-      datum.onComplete()
-    }
-
-    // On Last Item? run on Complete
-    if (stepFocus === data.length - 1) {
-      this.onComplete(step)
-    } else {
-      this.setState({ completed: step })
-    }
-  }
   onComplete (step) {
     // console.log('Done with Timeline!')
     // this.refs.timeline.stop()
@@ -176,106 +197,73 @@ export default class Timeline extends React.Component {
   }
   render () {
     let {
-      completed,
       width,
       now
     } = this.state
     let {
-      labelPos,
       height,
-      title,
-      mainBkg,
       margin,
-      titleBkg,
-      step,
       data,
+      parseSpecifier,
       id,
       xData,
-      showDots,
-      showLabels,
-      showTicks,
-      titleStyle,
-      textStyle,
-      progressStyle,
-      dotStyle,
-      dotCompleteStyle,
-      goalCompleteDotStyle,
-      goalDotStyle,
-      wrapStyle,
-      style
+      ...styles
     } = this.props
 
-    let complete = completed === data.length - 1
+    let complete
     let _self = this
     if (!data) return null
-    let parseDate = timeParse('%Y-%m-%dT%H:%M:%S.%LZ')
-    let parsedData
     let scaleHalf
     let endScale
-    let nowVal
+    let nowScale
     if (data && data.length) {
-      parsedData = data.map((d, i) => {
-        return {
-          ...d,
-          date: parseDate(d.date)
-        }
-      }).sort((a, b) => {
-        if (!a || !b) return 0
-        if (!a[xData] || !b[xData]) return 0
-        return a[xData].getTime() - b[xData].getTime()
-      })
-      this.data = parsedData
-      this.extent = extent(parsedData, function (d) {
-        return d[xData]
-      })
       this.createChart(_self)
 
       // Calculate Vertical Center Point
       scaleHalf = this.yScale(this.h / 2)
       // Calculate X-Scaled Value for NOW
       endScale = this.xScale(this.extent[1])
-      nowVal = this.xScale(parseDate(now))
-      nowVal = nowVal >= endScale ? endScale : nowVal
+
+      // if Now coerces to true, try to parse. else set 0
+      nowScale = now ? this.xScale(this.parseDate(now)) : 0
+
+      // Determine if Completed based on if Now is greater than the End
+      complete = nowScale >= endScale
+
+      // Cap Nowscale at the end scale.
+      nowScale = complete ? endScale : nowScale
+
       // Calculate percentile progress
-      // percentile = nowVal / this.xScale(this.extent[1])
+      // percentile = nowScale / this.xScale(this.extent[1])
     }
 
     return (
-      <div ref={'container'} style={{ position: 'relative', height: height, ...wrapStyle }}>
+      <div ref={'container'} style={{ position: 'relative', height: height, ...styles.wrapStyle }}>
         <Chart
           key={width}
-          title={title}
           xData={xData}
-          titleBkg={titleBkg}
-          titleStyle={titleStyle}
-          progress={step}
-          completeScale={nowVal}
-          textStyle={textStyle}
-          mainBkg={mainBkg}
+          xScale={this.xScale}
           margin={margin}
           id={id}
-          now={nowVal}
-          labelPos={labelPos}
-          complete={complete}
-          completed={completed}
+          now={nowScale}
           data={this.data}
-          dotStyle={dotStyle}
-          dotCompleteStyle={dotCompleteStyle}
-          goalDotStyle={goalDotStyle}
-          goalCompleteDotStyle={goalCompleteDotStyle}
-          showDots={showDots}
-          showLabels={showLabels}
-          showTicks={showTicks}
-          style={{ position: 'relative', ...style }}
+          complete={complete}
+          {...styles}
+          width={width}
           height={height}
-          width={width}>
-          <AnimatedProgress
+          onComplete={this.complete}
+          >
+          <TimeProgress
+            ref={'timeline'}
             id={'chart_progress'}
-            style={{ fill: '#eee', ...progressStyle }}
+            style={{ fill: '#eee', ...styles.progressStyle }}
             height={8}
-            width={nowVal}
+            tweenDone={() => {}}
+            progress={nowScale}
+            duration={this.idealSpeed}
             y={scaleHalf - 4} />
         </Chart>
       </div>)
   }
 }
+export default TimeProgressChart

@@ -27,8 +27,8 @@ export default class ParallaxComponent extends Component {
       let { scrollY } = window
       let el = ReactDOM.findDOMNode(this)
       let { offsetTop, offsetHeight } = el
-      let d = (scrollY - offsetTop) * 0.75 / offsetHeight
-      let n = clamp((d * 100).toFixed(0), (-0.25 * offsetHeight).toFixed(0), (0.75 * offsetHeight).toFixed(0))
+      let d = (offsetTop - scrollY) * 1.75 / offsetHeight
+      let n = clamp((d * 100).toFixed(0), (-2 * offsetHeight).toFixed(0), (0.75 * offsetHeight).toFixed(0))
       let t = `translateY(${n}px) translateZ(0)`
 
       this.setState({
