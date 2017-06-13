@@ -52,7 +52,7 @@ let dates = [
 ];
 
 const MyAwesomeReactComponent = () => (
-  <TimeProgress data={dates} />
+  <TimeProgress data={dates} parseSpecifier={'%Y-%m-%d'} />
 );
 
 export default MyAwesomeReactComponent;
