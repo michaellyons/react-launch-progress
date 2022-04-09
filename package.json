@@ -153,7 +153,7 @@
     "karma-webpack-with-fast-source-maps": "^1.10.1",
     "marked": "^0.3.6",
     "mocha": "^3.2.0",
-    "moment": "^2.18.1",
+    "moment": "^2.29.2",
     "node-sass": "^4.5.2",
     "npm-install-webpack-plugin": "^4.0.4",
     "path": "^0.12.7",
