@@ -128,7 +128,7 @@
     "compression": "^1.6.2",
     "css-loader": "^0.28.0",
     "cssnano": "^3.10.0",
-    "debug": "^2.6.3",
+    "debug": "^2.6.9",
     "enzyme": "^2.8.2",
     "eslint": "^3.19.0",
     "eslint-config-standard": "^10.2.1",
